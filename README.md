@@ -104,10 +104,10 @@ Please note that you will also have to shade and relocate the UpdateChecker into
             <configuration>
                 <relocations>
                     <!-- Using the maven-shade-plugin to shade and relocate the UpdateChecker -->
-                    <!-- Replace "my.example.plugin" with your plugin's package name -->
+                    <!-- Replace "your.package" with your plugin's package name -->
                     <relocation>
                         <pattern>de.jeff_media.updatechecker</pattern>
-                        <shadedPattern>my.example.plugin.updatechecker</shadedPattern>
+                        <shadedPattern>your.package.updatechecker</shadedPattern>
                     </relocation>
                 </relocations>
             </configuration>
