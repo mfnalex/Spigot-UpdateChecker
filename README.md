@@ -1,5 +1,5 @@
 # SpigotUpdateChecker
-The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins.
+The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins. **Scroll all the way to the bottom for maven information, JavaDocs and a complete Example Plugin!**
 
 ![Screenshot](https://api.jeff-media.de/img/updatecheckeringame.png)
 ![Screenshot](https://api.jeff-media.de/img/updatecheckerconsole.png)
@@ -59,12 +59,14 @@ public class MyPlugin extends JavaPlugin {
         UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
                 .setFreeDownloadLink(ANGELCHEST_FREE)
                 .setPaidDownloadLink(ANGELCHEST_PLUS)
+                .setNameFreeVersion("Free") // Optional. It's the suffix for the download links
+                .setNamePaidVersion("Plus") // when both links are shown.
                 .setUsingPaidVersion(usingPaidVersion)
                 .checkNow();
     }
 }
 ```
-Users of the free version will not see both links:
+Users of the free version will now see both links:
 
 ![Screenshot](https://api.jeff-media.de/img/updatecheckeringamefreeversion.png)
 

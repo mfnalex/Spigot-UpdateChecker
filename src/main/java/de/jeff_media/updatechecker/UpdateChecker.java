@@ -24,11 +24,11 @@ public class UpdateChecker {
 
     protected static final String VERSION = "1.0.0";
     private static UpdateChecker instance = null;
-    private final boolean listenerAlreadyRegistered = false;
+    private boolean listenerAlreadyRegistered = false;
     protected String cachedLatestVersion = null;
     protected boolean coloredConsoleOutput = false;
     protected String nameFreeVersion = "Free";
-    protected String namePaidVersion = "Plus";
+    protected String namePaidVersion = "Paid";
     protected boolean notifyOpsOnJoin = true;
     protected String notifyPermission = null;
     protected boolean notifyRequesters = true;
@@ -88,6 +88,7 @@ public class UpdateChecker {
 
         if (!instance.listenerAlreadyRegistered) {
             Bukkit.getPluginManager().registerEvents(new InternalUpdateCheckListener(), plugin);
+            instance.listenerAlreadyRegistered = true;
         }
 
         return instance;
