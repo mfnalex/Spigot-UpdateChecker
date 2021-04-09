@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Messages {
+class Messages {
 
     @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
@@ -29,7 +29,7 @@ public class Messages {
         return component;
     }
 
-    public static void printCheckResultToConsole(UpdateCheckEvent event) {
+    protected static void printCheckResultToConsole(UpdateCheckEvent event) {
 
         final UpdateChecker instance = UpdateChecker.getInstance();
         final Plugin plugin = instance.getPlugin();
@@ -69,7 +69,7 @@ public class Messages {
         plugin.getLogger().warning("=================================================");
     }
 
-    public static void printCheckResultToPlayer(Player player) {
+    protected static void printCheckResultToPlayer(Player player) {
         UpdateChecker instance = UpdateChecker.getInstance();
         player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
         sendLinks(player);

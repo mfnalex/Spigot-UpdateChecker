@@ -17,6 +17,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Automatically checks for updates
+ */
 public class UpdateChecker {
 
     protected static final String VERSION = "1.0.0";
@@ -40,6 +43,10 @@ public class UpdateChecker {
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
 
+    /**
+     * Gets the UpdateChecker instance
+     * @return
+     */
     public static UpdateChecker getInstance() {
         if (instance == null) {
             instance = new UpdateChecker();
@@ -47,6 +54,12 @@ public class UpdateChecker {
         return instance;
     }
 
+    /**
+     * Initializes the UpdateChecker instance. HAS to be called before the UpdateChecker can run.
+     * @param plugin Main class of your plugin
+     * @param apiLink HTTP(S) link to a file containing a string with the latest version of your plugin. You can use the SpigotMC Web API for that: https://api.spigotmc.org/legacy/update.php?resource=12345 where 12345 is the ID of your plugin on SpigotMC
+     * @return
+     */
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
         Objects.requireNonNull(plugin, "Plugin cannot be null.");
         Objects.requireNonNull(apiLink, "API Link cannot be null.");
@@ -66,6 +79,11 @@ public class UpdateChecker {
         return instance;
     }
 
+    /**
+     * Starts to check every X hours for updates. The first check will also happen after X hours so you might want to call checkNow() too. When you set notifyRequesters to true (default), the Console will get a notification about the check result.
+     * @param hours Amount of hours in between checks
+     * @return
+     */
     public UpdateChecker checkEveryXHours(double hours) {
         double minutes = hours * 60;
         double seconds = minutes * 60;
@@ -81,10 +99,17 @@ public class UpdateChecker {
         return this;
     }
 
+    /**
+     * Checks for updates now and sends the result to the console when notifyRequesters is set to true (default)
+     */
     public void checkNow() {
         checkNow(Bukkit.getConsoleSender());
     }
 
+    /**
+     * Checks for updates now and sends the result to the given list of CommandSenders. Can be null to silently check for updates.
+     * @param requesters CommandSenders to send the result to, or null
+     */
     public void checkNow(@Nullable CommandSender... requesters) {
         if (main == null) {
             throw new IllegalStateException("Plugin has not been set.");
@@ -164,19 +189,37 @@ public class UpdateChecker {
         return list;
     }
 
+    /**
+     * Returns the changelog link
+     * @return
+     */
     public String getChangelogLink() {
         return changelogLink;
     }
 
+    /**
+     * Sets a link to your plugin's changelog.
+     * @param link
+     * @return
+     */
     public UpdateChecker setChangelogLink(String link) {
         changelogLink = link;
         return this;
     }
 
+    /**
+     * Returns the donation link
+     * @return
+     */
     public String getDonationLink() {
         return donationLink;
     }
 
+    /**
+     * Sets a link to your plugin's donation website
+     * @param donationLink
+     * @return
+     */
     public UpdateChecker setDonationLink(@Nullable String donationLink) {
         this.donationLink = donationLink;
         return this;
@@ -186,65 +229,124 @@ public class UpdateChecker {
         return main;
     }
 
+    /**
+     * Sets whether or not the used and latest version will be displayed in color in the console
+     * @param coloredConsoleOutput
+     * @return
+     */
     public UpdateChecker setColoredConsoleOutput(boolean coloredConsoleOutput) {
         this.coloredConsoleOutput = coloredConsoleOutput;
         return this;
     }
 
+    /**
+     * Sets the download link for your plugin. Use this if there is only one version of your plugin, either only a free or only a paid version.
+     * @param downloadLink
+     * @return
+     */
     public UpdateChecker setDownloadLink(@Nullable String downloadLink) {
         this.paidDownloadLink = null;
         this.freeDownloadLink = downloadLink;
         return this;
     }
 
+    /**
+     * Sets the download link for the free version of your plugin. Use this if there is both, a free and a paid version of your plugin available.
+     * @param freeDownloadLink
+     * @return
+     */
     public UpdateChecker setFreeDownloadLink(@Nullable String freeDownloadLink) {
         this.freeDownloadLink = freeDownloadLink;
         return this;
     }
 
+    /**
+     * Sets the suffix for the free version's name. E.g. when you set this to "Free", the Download link for the free version will be shown as "Download (Free): [Link]"
+     * @param nameFreeVersion
+     * @return
+     */
     public UpdateChecker setNameFreeVersion(String nameFreeVersion) {
         this.nameFreeVersion = nameFreeVersion;
         return this;
     }
 
+    /**
+     * Sets the suffix for the paid version's name. E.g. when you set this to "Platinum version", the Download link for the paid version will be shown as "Download (Platinum version): [Link]"
+     * @param namePaidVersion
+     * @return
+     */
     public UpdateChecker setNamePaidVersion(String namePaidVersion) {
         this.namePaidVersion = namePaidVersion;
         return this;
     }
 
+    /**
+     * You can set a permission name. Players joining with this permission will be informed when there is a new version available.
+     * @param permission
+     * @return
+     */
     public UpdateChecker setNotifyByPermissionOnJoin(@Nullable String permission) {
         notifyPermission = permission;
         return this;
     }
 
+    /**
+     * Whether or not to inform OPs on join when there is a new version available.
+     * @param notifyOpsOnJoin
+     * @return
+     */
     public UpdateChecker setNotifyOpsOnJoin(boolean notifyOpsOnJoin) {
         this.notifyOpsOnJoin = notifyOpsOnJoin;
         return this;
     }
 
+    /**
+     * Whether or not CommandSenders who request an update check will be notified of the result.
+     * @param notify
+     * @return
+     */
     public UpdateChecker setNotifyRequesters(boolean notify) {
         notifyRequesters = notify;
         return this;
     }
 
+    /**
+     * Sets the download link for the paid version of your plugin. Use this if there is both, a free and a paid version of your plugin available.
+     * @param link
+     * @return
+     */
     public UpdateChecker setPaidDownloadLink(String link) {
         paidDownloadLink = link;
         return this;
     }
 
+    /**
+     * Sets the UserAgent string using a UserAgentBuilder
+     * @param userAgentBuilder
+     * @return
+     */
     public UpdateChecker setUserAgent(@NotNull UserAgentBuilder userAgentBuilder) {
         userAgentString = userAgentBuilder.build();
         return this;
     }
 
+    /**
+     * Sets the UserAgent string using plain text
+     * @param userAgent
+     * @return
+     */
     public UpdateChecker setUserAgent(@Nullable String userAgent) {
         userAgentString = userAgent;
         return this;
     }
 
+    /**
+     * Tells the UpdateChecker whether the server already uses the paid version of your plugin. If yes, the downloads to the free version are not shown. You can ignore this if you only offer one version of your plugin.
+     * @param paidVersion
+     * @return
+     */
     public UpdateChecker setUsingPaidVersion(boolean paidVersion) {
         usingPaidVersion = paidVersion;
         return this;
     }
-
 }
