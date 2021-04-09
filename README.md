@@ -18,7 +18,7 @@ It is also possible to define two download links if your plugin is available as 
 add links to your donation page and changelog.
 
 You can either provide all those links, including to the API endpoint where the latest version is checked yourself, or
-just the SpigotMC Resource ID of your plugin for the Update Checker to get those links automatically.
+just provide the SpigotMC Resource ID of your plugin for the Update Checker to get those links automatically.
 
 ## Example
 To get a working UpdateChecker, this is already enough:
