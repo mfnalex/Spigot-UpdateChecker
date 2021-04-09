@@ -25,6 +25,7 @@ public class UpdateChecker {
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=";
     private static UpdateChecker instance = null;
+    private static boolean listenerAlreadyRegistered = false;
     protected String cachedLatestVersion = null;
     protected boolean coloredConsoleOutput = false;
     protected String nameFreeVersion = "Free";
@@ -32,30 +33,19 @@ public class UpdateChecker {
     protected boolean notifyOpsOnJoin = true;
     protected String notifyPermission = null;
     protected boolean notifyRequesters = true;
+    @SuppressWarnings("CanBeFinal")
+    protected String spigotUserId = "%%__USER__%%";
     protected String usedVersion = null;
+    protected boolean usingPaidVersion = false;
     private String apiLink = null;
     private String changelogLink = null;
     private String donationLink = null;
     private String freeDownloadLink = null;
-    private static boolean listenerAlreadyRegistered = false;
     private Plugin main = null;
     private String paidDownloadLink = null;
-
-    /**
-     * Sets the timeout for the HTTP(S) connection in milliseconds. 0 = use Java's default value
-     * @param timeout
-     */
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    private int timeout = 0;
     private int task = -1;
+    private int timeout = 0;
     private String userAgentString = null;
-    @SuppressWarnings("CanBeFinal")
-    protected String spigotUserId = "%%__USER__%%";
-    protected boolean usingPaidVersion = false;
-
     /**
      * Use UpdateChecker.init() instead. You can later get the instance by using UpdateChecker.getInstance()
      */
@@ -78,28 +68,12 @@ public class UpdateChecker {
     /**
      * Initializes the UpdateChecker instance. HAS to be called before the UpdateChecker can run.
      *
-     * @param plugin  Main class of your plugin
+     * @param plugin           Main class of your plugin
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String from the SpigotMC Web API
      * @return
      */
     public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
         return init(plugin, SPIGOT_UPDATE_API + spigotResourceId);
-    }
-
-    /**
-     * Returns the latest version string found by the UpdateChecker, or null if all checks until yet have failed.
-     * @return
-     */
-    public String getCachedLatestVersion() {
-        return cachedLatestVersion;
-    }
-
-    /**
-     * Gets the version string of the currently used plugin version.
-     * @return
-     */
-    public String getUsedVersion() {
-        return usedVersion;
     }
 
     /**
@@ -127,16 +101,6 @@ public class UpdateChecker {
         }
 
         return instance;
-    }
-
-    /**
-     * Stops the scheduled update checks - THIS IS NOT NEEDED when calling checkEveryXHours(double) again, as the UpdateChecker will automatically stop its previous task.
-     */
-    public void stop() {
-       if(task != -1) {
-           Bukkit.getScheduler().cancelTask(task);
-       }
-       task = -1;
     }
 
     /**
@@ -191,7 +155,7 @@ public class UpdateChecker {
             try {
                 final HttpURLConnection httpConnection = (HttpURLConnection) new URL(apiLink).openConnection();
                 httpConnection.addRequestProperty("User-Agent", userAgentString);
-                if(timeout > 0) {
+                if (timeout > 0) {
                     httpConnection.setConnectTimeout(timeout);
                 }
                 final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
@@ -264,6 +228,15 @@ public class UpdateChecker {
     }
 
     /**
+     * Returns the latest version string found by the UpdateChecker, or null if all checks until yet have failed.
+     *
+     * @return
+     */
+    public String getCachedLatestVersion() {
+        return cachedLatestVersion;
+    }
+
+    /**
      * Returns the changelog link
      *
      * @return
@@ -315,6 +288,15 @@ public class UpdateChecker {
 
     protected Plugin getPlugin() {
         return main;
+    }
+
+    /**
+     * Gets the version string of the currently used plugin version.
+     *
+     * @return
+     */
+    public String getUsedVersion() {
+        return usedVersion;
     }
 
     /**
@@ -448,6 +430,15 @@ public class UpdateChecker {
     }
 
     /**
+     * Sets the timeout for the HTTP(S) connection in milliseconds. 0 = use Java's default value
+     *
+     * @param timeout
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
      * Sets the UserAgent string using a UserAgentBuilder
      *
      * @param userAgentBuilder
@@ -478,5 +469,15 @@ public class UpdateChecker {
     public UpdateChecker setUsingPaidVersion(boolean paidVersion) {
         usingPaidVersion = paidVersion;
         return this;
+    }
+
+    /**
+     * Stops the scheduled update checks - THIS IS NOT NEEDED when calling checkEveryXHours(double) again, as the UpdateChecker will automatically stop its previous task.
+     */
+    public void stop() {
+        if (task != -1) {
+            Bukkit.getScheduler().cancelTask(task);
+        }
+        task = -1;
     }
 }

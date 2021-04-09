@@ -62,35 +62,17 @@ class Messages {
             lines.add(" ");
             if (downloadLinks.size() == 1) {
                 lines.add("Download:");
-                lines.add("  "+downloadLinks.get(0));
+                lines.add("  " + downloadLinks.get(0));
             } else if (downloadLinks.size() == 2) {
                 lines.add("Download (Plus):");
-                lines.add("  "+downloadLinks.get(0));
+                lines.add("  " + downloadLinks.get(0));
                 lines.add(" ");
                 lines.add("Download (Free):");
-                lines.add("  "+downloadLinks.get(1));
+                lines.add("  " + downloadLinks.get(1));
             }
         }
 
-        printNiceBoxToConsole(plugin.getLogger(),Level.WARNING,lines,120,"*", true);
-    }
-
-    private static void printNiceBoxToConsole(Logger logger, Level level, ArrayList<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
-        int longestLine = 0;
-        for(String line : lines) {
-            longestLine = Math.max(line.length(),longestLine);
-        }
-        longestLine += 2;
-        if(longestLine>maxLineLengh) longestLine = maxLineLengh;
-        if(prefix) longestLine += 2;
-        StringBuilder dash = new StringBuilder(longestLine);
-        Stream.generate(() -> dashSymbol).limit(longestLine).forEach(dash::append);
-
-        logger.log(level,dash.toString());
-        for(String line : lines) {
-            logger.log(level, (prefix ? dashSymbol + " " : "") + line);
-        }
-        logger.log(level,dash.toString());
+        printNiceBoxToConsole(plugin.getLogger(), Level.WARNING, lines, 120, "*", true);
     }
 
     protected static void printCheckResultToPlayer(Player player) {
@@ -99,6 +81,24 @@ class Messages {
         sendLinks(player);
         player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.cachedLatestVersion + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.usedVersion);
         player.sendMessage("");
+    }
+
+    private static void printNiceBoxToConsole(Logger logger, Level level, ArrayList<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
+        int longestLine = 0;
+        for (String line : lines) {
+            longestLine = Math.max(line.length(), longestLine);
+        }
+        longestLine += 2;
+        if (longestLine > maxLineLengh) longestLine = maxLineLengh;
+        if (prefix) longestLine += 2;
+        StringBuilder dash = new StringBuilder(longestLine);
+        Stream.generate(()->dashSymbol).limit(longestLine).forEach(dash::append);
+
+        logger.log(level, dash.toString());
+        for (String line : lines) {
+            logger.log(level, (prefix ? dashSymbol + " " : "") + line);
+        }
+        logger.log(level, dash.toString());
     }
 
     private static void sendLinks(@NotNull final Player player) {

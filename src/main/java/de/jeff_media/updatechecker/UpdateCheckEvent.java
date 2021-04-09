@@ -42,6 +42,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Returns the latest version string found by the UpdateChecker, or null if all checks until yet have failed.
+     *
      * @return
      */
     public @Nullable String getLatestVersion() {
@@ -50,6 +51,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Gets an array of all CommandSenders who have requested this update check. Normally this will either be the ConsoleCommandSender or a player.
+     *
      * @return
      */
     public @Nullable CommandSender[] getRequesters() {
@@ -64,6 +66,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Gets the result, i.e. whether a new version is available or not.
+     *
      * @return
      */
     public UpdateCheckResult getResult() {
@@ -72,6 +75,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Checks whether the update checking attempt was successful or failed.
+     *
      * @return
      */
     public UpdateCheckSuccess getSuccess() {
@@ -80,6 +84,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Gets the version string of the currently used plugin version.
+     *
      * @return
      */
     public @NotNull String getUsedVersion() {
