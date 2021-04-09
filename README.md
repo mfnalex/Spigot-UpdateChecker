@@ -126,8 +126,9 @@ Please note that you will also have to shade and relocate the UpdateChecker into
         </plugin>
     </plugins>
 </build>
-**Failing to relocate the package will make the UpdateChecker throw an exception, so CHANGE IT!**
 ```
+
+**Failing to relocate the package will make the UpdateChecker throw an exception, so CHANGE IT!**
 
 ## JavaDocs and Example plugin
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
