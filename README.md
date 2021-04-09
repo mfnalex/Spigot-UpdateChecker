@@ -1,8 +1,9 @@
 # SpigotUpdateChecker
 The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins. **Scroll all the way to the bottom for maven information, JavaDocs and a complete Example Plugin!**
 
-![Screenshot](https://api.jeff-media.de/img/updatecheckeringame.png)
-![Screenshot](https://api.jeff-media.de/img/updatecheckerconsole.png)
+![Screenshot](https://api.jeff-media.de/img/updatechecker2.png)
+[comment]: <> (![Screenshot](https://api.jeff-media.de/img/updatecheckeringame.png)
+[comment]: <> (![Screenshot](https://api.jeff-media.de/img/updatecheckerconsole.png)
 
 ## Features
 The SpigotUpdateChecker can automatically notify Operators on Join or players with a specific permission, you can issue manual checks and send the result ingame to specific players or have them printed to the console. You can define two download links if your plugin is available as free and paid version and add links to your donation page and changelog.
@@ -68,11 +69,12 @@ public class MyPlugin extends JavaPlugin {
 ```
 Users of the free version will now see both links:
 
-![Screenshot](https://api.jeff-media.de/img/updatecheckeringamefreeversion.png)
+![Screenshot](https://api.jeff-media.de/img/updatechecker1.png)
 
-Users of the paid version will however only get the paid version's download link.
+Users of the paid version will however only get the paid version's download link, just like in the screenshots at the top.
 
 ## Maven
+The UpdateChecker is available in my public repository:
 ```xml
 <repositories>
     <repository>
@@ -84,7 +86,7 @@ Users of the paid version will however only get the paid version's download link
     <dependency>
         <groupId>de.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0</version> <!-- Check on GitHub for the latest version -->
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -122,6 +124,7 @@ Please note that you will also have to shade and relocate the UpdateChecker into
         </plugin>
     </plugins>
 </build>
+**Failing to relocate the package will make the UpdateChecker throw an exception, so CHANGE IT!**
 ```
 
 ## JavaDocs and Example plugin
