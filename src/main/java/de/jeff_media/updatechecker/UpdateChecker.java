@@ -460,7 +460,7 @@ public class UpdateChecker {
     }
 
     /**
-     * Tells the UpdateChecker whether the server already uses the paid version of your plugin. If yes, the downloads to the free version are not shown. You can ignore this if you only offer one version of your plugin.
+     * Tells the UpdateChecker whether the server already uses the paid version of your plugin. If yes, the downloads to the free version are not shown. You can ignore this if you only offer one version of your plugin. When this value is not set, the Update Checker automatically sets this to true by checking the %%__USER__%% placeholder, see https://www.spigotmc.org/wiki/premium-resource-placeholders-identifiers/
      *
      * @param paidVersion
      * @return
