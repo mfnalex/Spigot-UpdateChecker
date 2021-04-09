@@ -6,11 +6,11 @@ The SpigotUpdateChecker is a simple library for you to add a perfectly working u
 </p>
 
 ## Features
+You can issue manual and repeated update checks and send the result as ingame message to specific players and/or have them printed to the
+console.
+
 All checks are done asynchronously. When the check is done, a custom event is called. The update checker itself listens to it
 and can automatically notify Operators on Join or players with a specific permission.
-
-You can also issue manual checks and send the result ingame to specific players or have them printed to the
-console.
 
 Of course, you can also just listen to the UpdateCheckEvent yourself to do whatever you like once a new version is detected.
 
