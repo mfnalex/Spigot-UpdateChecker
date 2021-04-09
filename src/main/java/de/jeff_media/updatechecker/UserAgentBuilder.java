@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Creates a User-Agent string
+ * Creates a User-Agent string. Always starts with "JEFF-Media-GbR-SpigotUpdateChecker/[version]" followed by all added parameters.
  */
 public class UserAgentBuilder {
 
@@ -16,12 +16,12 @@ public class UserAgentBuilder {
     private final StringBuilder builder = new StringBuilder("JEFF-Media-GbR-SpigotUpdateChecker/").append(UpdateChecker.VERSION);
     private final ArrayList<String> list = new ArrayList<>();
 
-    public static UserAgentBuilder getDefaultUserAgent() {
+    protected static UserAgentBuilder getDefaultUserAgent() {
         return new UserAgentBuilder().addPluginNameAndVersion().addServerVersion().addBukkitVersion();
     }
 
     /**
-     * Adds the Bukkit version
+     * Adds the Bukkit version, e.g. "BukkitVersion/1.16.5-R0.1-SNAPSHOT"
      * @return
      */
     public UserAgentBuilder addBukkitVersion() {
@@ -30,7 +30,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds a custom Key/Value string
+     * Adds a custom Key/Value string, e.g. "foo/bar"
      * @param key Key
      * @param value Value
      * @return
@@ -41,7 +41,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds a custom string
+     * Adds a custom string, e.g. "foo"
      * @param text
      * @return
      */
@@ -51,7 +51,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds the plugin and version, e.g. AngelChest/3.11.0
+     * Adds the plugin and version, e.g. "AngelChest/3.11.0"
      * @return
      */
     public UserAgentBuilder addPluginNameAndVersion() {
@@ -60,7 +60,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds the Server version
+     * Adds the Server version, e.g. "ServerVersion/git-Paper-584 (MC: 1.16.5)"
      * @return
      */
     public UserAgentBuilder addServerVersion() {
