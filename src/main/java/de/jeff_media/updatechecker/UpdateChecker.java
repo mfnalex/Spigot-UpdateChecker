@@ -9,8 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,7 +52,9 @@ public class UpdateChecker {
     private int timeout = 0;
     private int task = -1;
     private String userAgentString = null;
-    private boolean usingPaidVersion = false;
+    @SuppressWarnings("CanBeFinal")
+    protected String spigotUserId = "%%__USER__%%";
+    protected boolean usingPaidVersion = false;
 
     /**
      * Use UpdateChecker.init() instead. You can later get the instance by using UpdateChecker.getInstance()
@@ -217,12 +217,7 @@ public class UpdateChecker {
     }
 
     private boolean detectPaidVersion() {
-        try {
-            Method getUIDMethod = main.getClass().getMethod("getUID", null);
-            return ((String) getUIDMethod.invoke(null, null)).matches("^[0-9]+$");
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            return false;
-        }
+        return spigotUserId.matches("^[0-9]+$");
     }
 
     /**

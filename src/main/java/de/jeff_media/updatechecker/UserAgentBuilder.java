@@ -16,12 +16,18 @@ public class UserAgentBuilder {
     private final StringBuilder builder = new StringBuilder("JEFF-Media-GbR-SpigotUpdateChecker/").append(UpdateChecker.VERSION);
     private final ArrayList<String> list = new ArrayList<>();
 
-    protected static UserAgentBuilder getDefaultUserAgent() {
+    /**
+     * Returns the default User-Agent, consisting of Plugin name and version, Server version and Bukkit version
+     *
+     * @return
+     */
+    public static UserAgentBuilder getDefaultUserAgent() {
         return new UserAgentBuilder().addPluginNameAndVersion().addServerVersion().addBukkitVersion();
     }
 
     /**
-     * Adds the Bukkit version, e.g. "BukkitVersion/1.16.5-R0.1-SNAPSHOT"
+     * Adds the Bukkit version. For example "BukkitVersion/1.16.5-R0.1-SNAPSHOT"
+     *
      * @return
      */
     public UserAgentBuilder addBukkitVersion() {
@@ -30,7 +36,28 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds a custom Key/Value string, e.g. "foo/bar"
+     * Returns the Spigot User ID of the user who downloaded the plugin. Only works for paid plugins from SpigotMC.org. For example "SpigotUID/175238"
+     *
+     * @return
+     */
+    public UserAgentBuilder addSpigotUserId() {
+        String uid = instance.usingPaidVersion ? instance.spigotUserId : "none";
+        list.add("SpigotUID/" + uid);
+        return this;
+    }
+
+    /**
+     * Returns whether this copy of the .jar is a paid plugin downloaded from SpigotMC.org. For example "Paid/true"
+     *
+     * @return
+     */
+    public UserAgentBuilder addUsingPaidVersion() {
+        list.add("Paid/" + instance.usingPaidVersion);
+        return this;
+    }
+
+    /**
+     * Adds a custom Key/Value string. For example "foo/bar"
      * @param key Key
      * @param value Value
      * @return
@@ -41,7 +68,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds a custom string, e.g. "foo"
+     * Adds a custom string. For example "foo"
      * @param text
      * @return
      */
@@ -51,7 +78,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds the plugin and version, e.g. "AngelChest/3.11.0"
+     * Adds the plugin and version. For example "AngelChest/3.11.0"
      * @return
      */
     public UserAgentBuilder addPluginNameAndVersion() {
@@ -60,7 +87,7 @@ public class UserAgentBuilder {
     }
 
     /**
-     * Adds the Server version, e.g. "ServerVersion/git-Paper-584 (MC: 1.16.5)"
+     * Adds the Server version. For example "ServerVersion/git-Paper-584 (MC: 1.16.5)"
      * @return
      */
     public UserAgentBuilder addServerVersion() {

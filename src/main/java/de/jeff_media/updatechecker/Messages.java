@@ -25,6 +25,7 @@ class Messages {
         // TODO: Make color configurable
         component.setColor(net.md_5.bungee.api.ChatColor.GOLD);
         component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
+        //noinspection deprecation
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, lore.create()));
         return component;
     }

@@ -52,7 +52,7 @@ Now imagine you have two versions of your plugin. One free version and a paid ve
 public class MyPlugin extends JavaPlugin {
     private static final int ANGELCHEST_FREE = 60383;
     private static final int ANGELCHEST_PLUS = 88214;
-    private boolean usingPaidVersion = howEverYouDetectIt();
+    private final boolean usingPaidVersion = howEverYouDetectIt();
     
     @Override
     public void onEnable() {

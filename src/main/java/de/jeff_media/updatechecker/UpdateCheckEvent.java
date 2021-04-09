@@ -86,8 +86,4 @@ public class UpdateCheckEvent extends Event {
         return instance.usedVersion;
     }
 
-    protected UpdateCheckEvent setStatus(UpdateCheckSuccess success) {
-        return this;
-    }
-
 }
