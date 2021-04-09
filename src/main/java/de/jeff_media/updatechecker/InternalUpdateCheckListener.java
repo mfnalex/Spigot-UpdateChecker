@@ -6,11 +6,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-class UpdateCheckListener implements Listener {
+class InternalUpdateCheckListener implements Listener {
 
     private final UpdateChecker instance;
 
-    UpdateCheckListener() {
+    InternalUpdateCheckListener() {
         instance = UpdateChecker.getInstance();
     }
 

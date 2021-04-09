@@ -60,7 +60,7 @@ public class UpdateChecker {
         if (instance.detectPaidVersion()) instance.usingPaidVersion = true;
 
         if (!instance.listenerAlreadyRegistered) {
-            Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
+            Bukkit.getPluginManager().registerEvents(new InternalUpdateCheckListener(), plugin);
         }
 
         return instance;
