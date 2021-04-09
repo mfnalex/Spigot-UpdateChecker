@@ -1,7 +1,9 @@
 # SpigotUpdateChecker
 The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins. **Scroll all the way to the bottom for maven information, JavaDocs and a complete Example Plugin!**
 
-![Screenshot](https://api.jeff-media.de/img/updatechecker2.png)
+<p align="center">
+    <img src="https://api.jeff-media.de/img/updatechecker2.png">
+</p>
 
 ## Features
 The SpigotUpdateChecker can automatically notify Operators on Join or players with a specific permission, you can issue manual checks and send the result ingame to specific players or have them printed to the console. You can define two download links if your plugin is available as free and paid version and add links to your donation page and changelog.
@@ -67,7 +69,9 @@ public class MyPlugin extends JavaPlugin {
 ```
 Users of the free version will now see both links:
 
-![Screenshot](https://api.jeff-media.de/img/updatechecker1.png)
+<p align="center">
+    <img src="https://api.jeff-media.de/img/updatechecker1.png">
+</p>
 
 Users of the paid version will however only get the paid version's download link, just like in the screenshots at the top.
 
@@ -128,3 +132,8 @@ Please note that you will also have to shade and relocate the UpdateChecker into
 ## JavaDocs and Example plugin
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
 Example plugin: https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker-Example
+
+## Discord
+Feel free to join my Discord for help.
+
+<a href="https://discord.jeff-media.de"><img src="https://api.jeff-media.de/img/discord1.png"></a>
