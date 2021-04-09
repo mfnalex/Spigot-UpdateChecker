@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 class Messages {
 
@@ -45,29 +48,49 @@ class Messages {
             return;
         }
 
-        plugin.getLogger().warning("=================================================");
-        plugin.getLogger().warning(String.format("There is a new version of %s available!", plugin.getName()));
-        plugin.getLogger().warning(String.format("  Your version: %s%s", instance.coloredConsoleOutput ? ChatColor.RED : "", event.getUsedVersion()));
-        plugin.getLogger().warning(String.format("Latest version: %s%s", instance.coloredConsoleOutput ? ChatColor.GREEN : "", event.getLatestVersion()));
+        ArrayList<String> lines = new ArrayList<>();
+
+        lines.add(String.format("There is a new version of %s available!", plugin.getName()));
+        lines.add(String.format("  Your version: %s%s", instance.coloredConsoleOutput ? ChatColor.RED : "", event.getUsedVersion()));
+        lines.add(String.format("Latest version: %s%s", instance.coloredConsoleOutput ? ChatColor.GREEN : "", event.getLatestVersion()));
 
         ArrayList<String> downloadLinks = instance.getAppropiateDownloadLinks();
 
         if (downloadLinks.size() > 0) {
-            plugin.getLogger().warning("Please update to the newest version.");
-            plugin.getLogger().warning(" ");
+            lines.add(" ");
+            lines.add("Please update to the newest version.");
+            lines.add(" ");
             if (downloadLinks.size() == 1) {
-                plugin.getLogger().warning("Download:");
-                plugin.getLogger().warning(downloadLinks.get(0));
+                lines.add("Download:");
+                lines.add("  "+downloadLinks.get(0));
             } else if (downloadLinks.size() == 2) {
-                plugin.getLogger().warning("Download (Plus):");
-                plugin.getLogger().warning(downloadLinks.get(0));
-                plugin.getLogger().warning(" ");
-                plugin.getLogger().warning("Download (Free):");
-                plugin.getLogger().warning(downloadLinks.get(1));
+                lines.add("Download (Plus):");
+                lines.add("  "+downloadLinks.get(0));
+                lines.add(" ");
+                lines.add("Download (Free):");
+                lines.add("  "+downloadLinks.get(1));
             }
-
         }
-        plugin.getLogger().warning("=================================================");
+
+        printNiceBoxToConsole(plugin.getLogger(),Level.WARNING,lines,120,"*", true);
+    }
+
+    private static void printNiceBoxToConsole(Logger logger, Level level, ArrayList<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
+        int longestLine = 0;
+        for(String line : lines) {
+            longestLine = Math.max(line.length(),longestLine);
+        }
+        longestLine += 2;
+        if(longestLine>maxLineLengh) longestLine = maxLineLengh;
+        if(prefix) longestLine += 2;
+        StringBuilder dash = new StringBuilder(longestLine);
+        Stream.generate(() -> dashSymbol).limit(longestLine).forEach(dash::append);
+
+        logger.log(level,dash.toString());
+        for(String line : lines) {
+            logger.log(level, (prefix ? dashSymbol + " " : "") + line);
+        }
+        logger.log(level,dash.toString());
     }
 
     protected static void printCheckResultToPlayer(Player player) {
