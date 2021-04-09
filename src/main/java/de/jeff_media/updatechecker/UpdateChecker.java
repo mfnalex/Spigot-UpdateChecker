@@ -132,6 +132,16 @@ public class UpdateChecker {
     }
 
     /**
+     * Returns the last successful Check Result
+     * @return
+     */
+    public UpdateCheckResult getLastCheckResult() {
+        if(cachedLatestVersion == null) return UpdateCheckResult.UNKNOWN;
+        if(cachedLatestVersion.equals(usedVersion)) return UpdateCheckResult.RUNNING_LATEST_VERSION;
+        return UpdateCheckResult.NEW_VERSION_AVAILABLE;
+    }
+
+    /**
      * Checks for updates now and sends the result to the given list of CommandSenders. Can be null to silently check for updates.
      *
      * @param requesters CommandSenders to send the result to, or null
@@ -434,8 +444,9 @@ public class UpdateChecker {
      *
      * @param timeout
      */
-    public void setTimeout(int timeout) {
+    public UpdateChecker setTimeout(int timeout) {
         this.timeout = timeout;
+        return this;
     }
 
     /**

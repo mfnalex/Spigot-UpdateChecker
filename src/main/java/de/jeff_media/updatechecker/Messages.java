@@ -75,12 +75,20 @@ class Messages {
         printNiceBoxToConsole(plugin.getLogger(), Level.WARNING, lines, 120, "*", true);
     }
 
-    protected static void printCheckResultToPlayer(Player player) {
+    protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
-        player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
-        sendLinks(player);
-        player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.cachedLatestVersion + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.usedVersion);
-        player.sendMessage("");
+        if(instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
+            player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
+            sendLinks(player);
+            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.cachedLatestVersion + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.usedVersion);
+            player.sendMessage("");
+        } else if(instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
+            player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
+        } else {
+            if(showMessageWhenLatestVersion) {
+                player.sendMessage(ChatColor.GREEN+"You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+            }
+        }
     }
 
     private static void printNiceBoxToConsole(Logger logger, Level level, ArrayList<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
