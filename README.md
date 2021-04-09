@@ -36,6 +36,7 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 ```
+The code above will print a message to the console once a new version is available and also send a message to every OP joining the server. If no new version is found, no message will be sent.
 
 Of course, there are many more options you can use. For example:
 
