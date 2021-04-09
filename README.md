@@ -154,6 +154,7 @@ Please note that you will also have to shade and relocate the UpdateChecker into
 
 ## JavaDocs and Example plugin
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
+
 Example plugin: https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker-Example
 
 ## Discord
