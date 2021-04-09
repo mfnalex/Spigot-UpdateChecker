@@ -130,7 +130,17 @@ public class UpdateChecker {
     }
 
     /**
-     * Starts to check every X hours for updates. The first check will also happen after X hours so you might want to call checkNow() too. When you set notifyRequesters to true (default), the Console will get a notification about the check result.
+     * Stops the scheduled update checks - THIS IS NOT NEEDED when calling checkEveryXHours(double) again, as the UpdateChecker will automatically stop its previous task.
+     */
+    public void stop() {
+       if(task != -1) {
+           Bukkit.getScheduler().cancelTask(task);
+       }
+       task = -1;
+    }
+
+    /**
+     * Starts to check every X hours for updates - If a task is already running, it gets cancelled and replaced with the new one, so don't be afraid to use this in your reload function. The first check will also happen after X hours so you might want to call checkNow() too. When you set notifyRequesters to true (default), the Console will get a notification about the check result.
      *
      * @param hours Amount of hours in between checks
      * @return
