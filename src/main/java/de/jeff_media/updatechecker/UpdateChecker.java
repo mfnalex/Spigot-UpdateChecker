@@ -42,6 +42,9 @@ public class UpdateChecker {
     private int task = -1;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
+    private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=";
+    private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
+    private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
 
     /**
      * Gets the UpdateChecker instance
@@ -55,9 +58,20 @@ public class UpdateChecker {
     }
 
     /**
+     * Use UpdateChecker.init() instead. You can later get the instance by using UpdateChecker.getInstance()
+     */
+    private UpdateChecker() {
+
+    }
+
+    public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
+        return init(plugin,SPIGOT_UPDATE_API+spigotResourceId);
+    }
+
+    /**
      * Initializes the UpdateChecker instance. HAS to be called before the UpdateChecker can run.
      * @param plugin Main class of your plugin
-     * @param apiLink HTTP(S) link to a file containing a string with the latest version of your plugin. You can use the SpigotMC Web API for that: https://api.spigotmc.org/legacy/update.php?resource=12345 where 12345 is the ID of your plugin on SpigotMC
+     * @param apiLink HTTP(S) link to a file containing a string with the latest version of your plugin.
      * @return
      */
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
@@ -119,7 +133,7 @@ public class UpdateChecker {
         }
 
         if (userAgentString == null) {
-            userAgentString = "JEFF-Media-GbR-SpigotUpdateChecker/" + VERSION;
+            userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(main, ()->{
@@ -198,6 +212,14 @@ public class UpdateChecker {
     }
 
     /**
+     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC Resource ID
+     * @param spigotResourceId
+     * @return
+     */
+    public UpdateChecker setChangelogLink(int spigotResourceId) {
+        return setChangelogLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId + SPIGOT_CHANGELOG_SUFFIX);
+    }
+    /**
      * Sets a link to your plugin's changelog.
      * @param link
      * @return
@@ -240,6 +262,15 @@ public class UpdateChecker {
     }
 
     /**
+     * Sets the download link for your plugin generated from your plugin's SpigotMC Resource ID. Use this if there is only one version of your plugin, either only a free or only a paid version.
+     * @param spigotResourceId
+     * @return
+     */
+    public UpdateChecker setDownloadLink(int spigotResourceId) {
+        return setDownloadLink(SPIGOT_DOWNLOAD_LINK+spigotResourceId);
+    }
+
+    /**
      * Sets the download link for your plugin. Use this if there is only one version of your plugin, either only a free or only a paid version.
      * @param downloadLink
      * @return
@@ -248,6 +279,15 @@ public class UpdateChecker {
         this.paidDownloadLink = null;
         this.freeDownloadLink = downloadLink;
         return this;
+    }
+
+    /**
+     * Sets the download link for the free version of your plugin generated from your plugin's SpigotMC Resource ID. Use this if there is both, a free and a paid version of your plugin available.
+     * @param spigotResourceId
+     * @return
+     */
+    public UpdateChecker setFreeDownloadLink(int spigotResourceId) {
+        return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK+spigotResourceId);
     }
 
     /**
@@ -308,6 +348,15 @@ public class UpdateChecker {
     public UpdateChecker setNotifyRequesters(boolean notify) {
         notifyRequesters = notify;
         return this;
+    }
+
+    /**
+     * Sets the download link for the paid version of your plugin generated from your plugin's SpigotMC Resource ID. Use this if there is both, a free and a paid version of your plugin available.
+     * @param spigotResourceId
+     * @return
+     */
+    public UpdateChecker setPaidDownloadLink(int spigotResourceId) {
+        return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK+spigotResourceId);
     }
 
     /**

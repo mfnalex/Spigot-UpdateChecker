@@ -16,6 +16,10 @@ public class UserAgentBuilder {
     private final StringBuilder builder = new StringBuilder("JEFF-Media-GbR-SpigotUpdateChecker/").append(UpdateChecker.VERSION);
     private final ArrayList<String> list = new ArrayList<>();
 
+    public static UserAgentBuilder getDefaultUserAgent() {
+        return new UserAgentBuilder().addPluginNameAndVersion().addServerVersion().addBukkitVersion();
+    }
+
     /**
      * Adds the Bukkit version
      * @return
