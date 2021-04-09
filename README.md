@@ -60,7 +60,11 @@ public class MyPlugin extends JavaPlugin {
 ```
 
 ## Differentiating between free and paid versions
-Now imagine you have two versions of your plugin. One free version and a paid version with extra features, like my AngelChest Free and AngelChest Plus plugin. If both plugins share the same codebase and only decide on runtime whether to unlock the premium features, you can easily get something like this working. Users of the free version will get links to both versions, so they can see the advantages of your paid version, while we don't want to send the free version link to users who already bought the paid version. To achieve this, you can just do this:
+Now imagine you have two versions of your plugin. One free version and a paid version with extra features,
+like my AngelChest Free and AngelChest Plus plugin. If both plugins share the same codebase and only decide on
+runtime whether to unlock the premium features, you can easily get something like this working:
+
+Users of the free version will get links to both versions, so they can see the advantages of your paid version, while we don't want to send the free version link to users who already bought the paid version. To achieve this, you can just do this:
 
 ```java
 public class MyPlugin extends JavaPlugin {
