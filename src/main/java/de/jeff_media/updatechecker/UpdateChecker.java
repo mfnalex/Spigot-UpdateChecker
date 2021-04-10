@@ -1,11 +1,5 @@
 package de.jeff_media.updatechecker;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,7 +7,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Automatically checks for updates
@@ -26,26 +27,27 @@ public class UpdateChecker {
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
-    protected String cachedLatestVersion = null;
-    protected boolean coloredConsoleOutput = false;
-    protected String nameFreeVersion = "Free";
-    protected String namePaidVersion = "Paid";
-    protected boolean notifyOpsOnJoin = true;
-    protected String notifyPermission = null;
-    protected boolean notifyRequesters = true;
+    private String cachedLatestVersion = null;
+    private String nameFreeVersion = "Free";
+    private String namePaidVersion = "Paid";
+    private String notifyPermission = null;
     @SuppressWarnings("CanBeFinal")
-    protected String spigotUserId = "%%__USER__%%";
-    protected String usedVersion = null;
-    protected boolean usingPaidVersion = false;
+    private String spigotUserId = "%%__USER__%%";
+    private String usedVersion = null;
     private String apiLink = null;
     private String changelogLink = null;
     private String donationLink = null;
     private String freeDownloadLink = null;
-    private Plugin main = null;
     private String paidDownloadLink = null;
-    private int task = -1;
-    private int timeout = 0;
     private String userAgentString = null;
+    private boolean coloredConsoleOutput = false;
+    private boolean notifyOpsOnJoin = true;
+    private boolean notifyRequesters = true;
+    private boolean usingPaidVersion = false;
+    private Plugin main = null;
+    private int taskId = -1;
+    private int timeout = 0;
+    
     /**
      * Use UpdateChecker.init() instead. You can later get the instance by using UpdateChecker.getInstance()
      */
@@ -55,8 +57,6 @@ public class UpdateChecker {
 
     /**
      * Gets the UpdateChecker instance
-     *
-     * @return
      */
     public static UpdateChecker getInstance() {
         if (instance == null) {
@@ -70,7 +70,7 @@ public class UpdateChecker {
      *
      * @param plugin           Main class of your plugin
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String from the SpigotMC Web API
-     * @return
+     * @return The UpdateChecker instance
      */
     public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
         return init(plugin, SPIGOT_UPDATE_API + spigotResourceId);
@@ -81,7 +81,7 @@ public class UpdateChecker {
      *
      * @param plugin  Main class of your plugin
      * @param apiLink HTTP(S) link to a file containing a string with the latest version of your plugin.
-     * @return
+     * @return The UpdateChecker instance
      */
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
         Objects.requireNonNull(plugin, "Plugin cannot be null.");
@@ -107,19 +107,17 @@ public class UpdateChecker {
      * Starts to check every X hours for updates - If a task is already running, it gets cancelled and replaced with the new one, so don't be afraid to use this in your reload function. The first check will also happen after X hours so you might want to call checkNow() too. When you set notifyRequesters to true (default), the Console will get a notification about the check result.
      *
      * @param hours Amount of hours in between checks
-     * @return
+     * @return The UpdateChecker instance
      */
     public UpdateChecker checkEveryXHours(double hours) {
         double minutes = hours * 60;
         double seconds = minutes * 60;
         long ticks = ((int) seconds) * 20;
-        if (task != -1) {
-            Bukkit.getScheduler().cancelTask(task);
-        }
+        stop();
         if (ticks > 0) {
-            task = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, ()->checkNow(Bukkit.getConsoleSender()), ticks, ticks);
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, () -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
         } else {
-            task = -1;
+            taskId = -1;
         }
         return this;
     }
@@ -133,7 +131,7 @@ public class UpdateChecker {
 
     /**
      * Returns the last successful Check Result
-     * @return
+     * @return 
      */
     public UpdateCheckResult getLastCheckResult() {
         if(cachedLatestVersion == null) return UpdateCheckResult.UNKNOWN;
@@ -158,7 +156,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(main, ()->{
+        Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -181,7 +179,7 @@ public class UpdateChecker {
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
-            Bukkit.getScheduler().runTask(main, ()->Bukkit.getPluginManager().callEvent(finalUpdateCheckEvent));
+            Bukkit.getScheduler().runTask(main, () -> Bukkit.getPluginManager().callEvent(finalUpdateCheckEvent));
         });
     }
 
@@ -217,8 +215,8 @@ public class UpdateChecker {
      *
      * @return List of zero to two download links. If the list contains two links, the first element is the paid download link.
      */
-    public ArrayList<String> getAppropiateDownloadLinks() {
-        ArrayList<String> list = new ArrayList<>();
+    public List<String> getAppropiateDownloadLinks() {
+        List<String> list = new ArrayList<>();
 
         if (usingPaidVersion) {
             if (paidDownloadLink != null) {
@@ -486,9 +484,77 @@ public class UpdateChecker {
      * Stops the scheduled update checks - THIS IS NOT NEEDED when calling checkEveryXHours(double) again, as the UpdateChecker will automatically stop its previous task.
      */
     public void stop() {
-        if (task != -1) {
-            Bukkit.getScheduler().cancelTask(task);
+        if (taskId != -1) {
+            Bukkit.getScheduler().cancelTask(taskId);
         }
-        task = -1;
+        taskId = -1;
     }
+    
+    // MrNemo64 start
+    /**
+     * @return True if the lastest version si being used, false otherwise
+     */
+    public boolean isUsingLastestVersion() {
+    	return usedVersion.equals(instance.cachedLatestVersion);
+    }
+
+		/**
+		 * @return the nameFreeVersion
+		 */
+		public String getNameFreeVersion() {
+			return nameFreeVersion;
+		}
+
+		/**
+		 * @return the namePaidVersion
+		 */
+		public String getNamePaidVersion() {
+			return namePaidVersion;
+		}
+
+		/**
+		 * @return the notifyPermission
+		 */
+		public String getNotifyPermission() {
+			return notifyPermission;
+		}
+
+		/**
+		 * @return the spigotUserId
+		 */
+		public String getSpigotUserId() {
+			return spigotUserId;
+		}
+
+		/**
+		 * @return the coloredConsoleOutput
+		 */
+		public boolean isColoredConsoleOutput() {
+			return coloredConsoleOutput;
+		}
+
+		/**
+		 * @return the notifyOpsOnJoin
+		 */
+		public boolean isNotifyOpsOnJoin() {
+			return notifyOpsOnJoin;
+		}
+
+		/**
+		 * @return the notifyRequesters
+		 */
+		public boolean isNotifyRequesters() {
+			return notifyRequesters;
+		}
+
+		/**
+		 * @return the usingPaidVersion
+		 */
+		public boolean isUsingPaidVersion() {
+			return usingPaidVersion;
+		}
+    
+    
+   // MrNemo64 end
+    
 }
