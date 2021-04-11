@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -29,7 +28,7 @@ public class UpdateChecker {
 	private static boolean listenerAlreadyRegistered = false;
 	// MrNemo64 start
 	private BiConsumer<CommandSender[], String> onSuccessfulCachedLatestVersion = (requesters, cachedVersion) -> {};
-	private Consumer<Exception> onUnsuccessfulCachedLatestVersion = (ex) -> ex.printStackTrace();
+	private BiConsumer<CommandSender[],Exception> onUnsuccessfulCachedLatestVersion = (requesters, ex) -> ex.printStackTrace();
 	// MrNemo64 end
 	private String cachedLatestVersion = null;
 	private String nameFreeVersion = "Free";
@@ -193,7 +192,7 @@ public class UpdateChecker {
 				updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
 			} catch(final Exception e) {
 				updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-				Bukkit.getScheduler().runTask(main, () -> getOnUnsuccessfulCachedLatestVersion().accept(e));
+				Bukkit.getScheduler().runTask(main, () -> getOnUnsuccessfulCachedLatestVersion().accept(requesters, e));
 			}
 
 			UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
@@ -631,7 +630,7 @@ public class UpdateChecker {
 	/**
 	 * @return the onUnsuccessfulCachedLatestVersion
 	 */
-	public Consumer<Exception> getOnUnsuccessfulCachedLatestVersion() {
+	public BiConsumer<CommandSender[], Exception> getOnUnsuccessfulCachedLatestVersion() {
 		return onUnsuccessfulCachedLatestVersion;
 	}
 
@@ -641,8 +640,8 @@ public class UpdateChecker {
 	 *                                          thrown in the version getting
 	 *                                          process
 	 */
-	public UpdateChecker setOnUnsuccessfulCachedLatestVersion(Consumer<Exception> onUnsuccessfulCachedLatestVersion) {
-		this.onUnsuccessfulCachedLatestVersion = onUnsuccessfulCachedLatestVersion == null ? (ex) -> ex.printStackTrace()
+	public UpdateChecker setOnUnsuccessfulCachedLatestVersion(BiConsumer<CommandSender[], Exception> onUnsuccessfulCachedLatestVersion) {
+		this.onUnsuccessfulCachedLatestVersion = onUnsuccessfulCachedLatestVersion == null ? (requesters, ex) -> ex.printStackTrace()
 				: onUnsuccessfulCachedLatestVersion;
 		return this;
 	}
