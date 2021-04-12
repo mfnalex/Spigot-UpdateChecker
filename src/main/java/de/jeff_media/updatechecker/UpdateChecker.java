@@ -2,11 +2,13 @@ package de.jeff_media.updatechecker;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -29,6 +31,27 @@ public class UpdateChecker {
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
     private String apiLink = null;
+
+    /**
+     * Returns whether the auto updater is enabled
+     * @return
+     */
+    public boolean getAutoUpdate() {
+        return autoUpdate;
+    }
+
+    /**
+     * Sets whether the UpdateChecker should automatically download a new version when it is found and install it on the next server restart
+     * @param autoUpdate
+     * @return
+     */
+    public UpdateChecker setAutoUpdate(boolean autoUpdate) {
+        this.autoUpdate = autoUpdate;
+        return this;
+    }
+
+    private boolean autoUpdate = false;
+    private String autoUpdateLink = null;
     private String cachedLatestVersion = null;
     private String changelogLink = null;
     private boolean coloredConsoleOutput = false;
@@ -41,14 +64,37 @@ public class UpdateChecker {
     private String notifyPermission = null;
     private boolean notifyRequesters = true;
     private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex)->ex.printStackTrace();
-    private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion)->{
-    };
+    private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion)->{ };
     private String paidDownloadLink = null;
     private int taskId = -1;
     private int timeout = 0;
     private String usedVersion = null;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
+    /*
+    TODO: Store the version of the latest auto update. On further update checks, do nothing unless
+    TODO: the new version is greater than lastAutoUpdateVersion.
+     */
+    private boolean autoUpdateFinished = false;
+
+    protected @Nullable String getLastAutoUpdateVersion() {
+        return lastAutoUpdateVersion;
+    }
+
+    protected void setLastAutoUpdateVersion(String lastAutoUpdateVersion) {
+        this.lastAutoUpdateVersion = lastAutoUpdateVersion;
+    }
+
+    private String lastAutoUpdateVersion = null;
+
+    static {
+        if(Bukkit.getUpdateFolderFile().isDirectory()) {
+            File updateFile = new File(Bukkit.getUpdateFolderFile(),AutoUpdater.getPluginJar().getName());
+            if(updateFile.exists()) {
+                updateFile.delete();
+            }
+        }
+    }
 
     /**
      * Use UpdateChecker.init() instead. You can later get the instance by using
@@ -66,6 +112,85 @@ public class UpdateChecker {
             instance = new UpdateChecker();
         }
         return instance;
+    }
+
+    /**
+     * Checks for updates now and sends the result to the console when
+     * notifyRequesters is set to true (default)
+     */
+    @NotNull
+    public UpdateChecker checkNow() {
+        checkNow(Bukkit.getConsoleSender());
+        return this;
+    }
+
+    /**
+     * Checks for updates now and sends the result to the given
+     * CommandSender when notifyRequesters is set to true (default).
+     * Can be null to silently check for updates.
+     *
+     * @param requester CommandSender to send the result to, or null
+     */
+    @NotNull
+    public UpdateChecker checkNow(@Nullable CommandSender requester) {
+        checkNow(new CommandSender[]{requester});
+        return this;
+    }
+
+    /**
+     * Checks for updates now and sends the result to the given list of
+     * CommandSenders when notifyRequesters is set to true (default).
+     * Can be null to silently check for updates.
+     *
+     * @param requesters CommandSenders to send the result to, or null
+     */
+    @NotNull
+    public UpdateChecker checkNow(@Nullable CommandSender[] requesters) {
+        if (main == null) {
+            throw new IllegalStateException("Plugin has not been set.");
+        }
+        if (apiLink == null) {
+            throw new IllegalStateException("API Link has not been set.");
+        }
+
+        if (userAgentString == null) {
+            userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(main, ()->{
+
+            UpdateCheckEvent updateCheckEvent;
+
+            try {
+                final HttpURLConnection httpConnection = (HttpURLConnection) new URL(apiLink).openConnection();
+                httpConnection.addRequestProperty("User-Agent", userAgentString);
+                if (timeout > 0) {
+                    httpConnection.setConnectTimeout(timeout);
+                }
+                final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
+                final BufferedReader reader = new BufferedReader(input);
+                cachedLatestVersion = reader.readLine().trim();
+                reader.close();
+                updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
+            } catch (final Exception e) {
+                updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
+                Bukkit.getScheduler().runTask(main, ()->getOnFail().accept(requesters, e));
+            }
+
+            UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters).setAutoUpdate(autoUpdate);
+
+            Bukkit.getScheduler().runTask(main, ()->{
+
+                if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
+                    getOnSuccess().accept(requesters, cachedLatestVersion);
+                }
+
+                Bukkit.getPluginManager().callEvent(finalUpdateCheckEvent);
+
+            });
+
+        });
+        return this;
     }
 
     /**
@@ -127,72 +252,12 @@ public class UpdateChecker {
         long ticks = ((int) seconds) * 20;
         stop();
         if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, ()->checkNow(Bukkit.getConsoleSender()), ticks,
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, ()->checkNow(new CommandSender[]{Bukkit.getConsoleSender()}), ticks,
                     ticks);
         } else {
             taskId = -1;
         }
         return this;
-    }
-
-    /**
-     * Checks for updates now and sends the result to the console when
-     * notifyRequesters is set to true (default)
-     */
-    public void checkNow() {
-        checkNow(Bukkit.getConsoleSender());
-    }
-
-    /**
-     * Checks for updates now and sends the result to the given list of
-     * CommandSenders. Can be null to silently check for updates.
-     *
-     * @param requesters CommandSenders to send the result to, or null
-     */
-    public void checkNow(@Nullable CommandSender... requesters) {
-        if (main == null) {
-            throw new IllegalStateException("Plugin has not been set.");
-        }
-        if (apiLink == null) {
-            throw new IllegalStateException("API Link has not been set.");
-        }
-
-        if (userAgentString == null) {
-            userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(main, ()->{
-
-            UpdateCheckEvent updateCheckEvent;
-
-            try {
-                final HttpURLConnection httpConnection = (HttpURLConnection) new URL(apiLink).openConnection();
-                httpConnection.addRequestProperty("User-Agent", userAgentString);
-                if (timeout > 0) {
-                    httpConnection.setConnectTimeout(timeout);
-                }
-                final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
-                final BufferedReader reader = new BufferedReader(input);
-                cachedLatestVersion = reader.readLine().trim();
-                reader.close();
-                updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
-            } catch (final Exception e) {
-                updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                Bukkit.getScheduler().runTask(main, ()->getOnFail().accept(requesters, e));
-            }
-
-            UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
-
-            Bukkit.getScheduler().runTask(main, ()->{
-
-                if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
-                    getOnSuccess().accept(requesters, cachedLatestVersion);
-                }
-
-                Bukkit.getPluginManager().callEvent(finalUpdateCheckEvent);
-            });
-
-        });
     }
 
     /**
@@ -247,6 +312,68 @@ public class UpdateChecker {
             }
         }
         return list;
+    }
+
+    public @Nullable String getAutoUpdateLink() {
+        return autoUpdateLink;
+    }
+
+    /**
+     * Sets the link to the latest version download link - you can use {version} and {name} as placeholder.
+     * If this value is not null, the UpdateChecker will download the new file and install it on the next server restart.
+     * If the newest version was already downloaded and a new update check is done, the file will only be downloaded
+     * again if now a "even more" newer version has been found (lol I hope I explained it understandable). For example:
+     * If the Update Checker detects that "1.2.0" is the latest version of "MyPlugin", and your autoUpdateLink is set to
+     * "https://example.com/{name}-{version}.jar", it will use the URL "https://example.com/MyPlugin-1.2.0.jar".
+     * @param autoUpdateLink URL to download the .jar or null
+     * @return
+     */
+    public UpdateChecker setAutoUpdateLink(@Nullable String autoUpdateLink) {
+        this.autoUpdateLink = autoUpdateLink;
+        return this;
+    }
+
+    public UpdateChecker loadFromConfig() {
+        if(main == null) {
+            throw new IllegalStateException("Plugin is not set.");
+        }
+
+        File yamlFile = new File(main.getDataFolder(),"updatechecker.yml");
+
+        if(!yamlFile.exists()) {
+            main.saveResource("updatechecker.yml", false);
+        }
+
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(yamlFile);
+
+        if(yaml.isSet("timeout")) {
+            timeout = yaml.getInt("timeout");
+        }
+
+        if(yaml.isSet("colored-console-output")) {
+            coloredConsoleOutput = yaml.getBoolean("colored-console-output");
+        }
+
+        if(yaml.isSet("notify-ops-on-join")) {
+            notifyOpsOnJoin = yaml.getBoolean("notify-ops-on-join");
+        }
+
+        if(yaml.isSet("auto-update")) {
+            autoUpdate = yaml.getBoolean("auto-update");
+        }
+
+        if(yaml.isSet("check-on-startup")) {
+            checkNow();
+        }
+
+        if(yaml.isSet("check-every-x-hours")) {
+            double interval = yaml.getDouble("check-every-x-hours");
+            if(interval > 0) {
+                checkEveryXHours(interval);
+            }
+        }
+
+        return this;
     }
 
     /**

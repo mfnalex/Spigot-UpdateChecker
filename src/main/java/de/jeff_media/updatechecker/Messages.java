@@ -5,11 +5,13 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,6 +19,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 class Messages {
+
 
     @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
@@ -92,6 +95,46 @@ class Messages {
         }
     }
 
+    protected static void printAutoUpdateResult(CommandSender sender, boolean success) {
+        UpdateChecker updateChecker = UpdateChecker.getInstance();
+
+
+        if (success) {
+            final String[] autoUpdateSuccessful = new String[] {
+                    ChatColor.GREEN + "Successfully downloaded " + ChatColor.GOLD + updateChecker.getPlugin().getName() + " " + updateChecker.getLatestVersion() + ChatColor.GREEN + ".",
+                    ChatColor.GRAY + "Restart the server to use the new version."
+            };
+            if (sender instanceof Player) {
+                sender.sendMessage("");
+                sender.sendMessage(autoUpdateSuccessful);
+            } else {
+                List<String> autoUpdateSuccessfulConsole = Arrays.asList(autoUpdateSuccessful);
+                if (!updateChecker.isColoredConsoleOutput()) {
+                    for (int i = 0; i < autoUpdateSuccessfulConsole.size(); i++) {
+                        autoUpdateSuccessfulConsole.set(i, ChatColor.stripColor(autoUpdateSuccessfulConsole.get(i)));
+                    }
+                }
+                printNiceBoxToConsole(updateChecker.getPlugin().getLogger(), Level.WARNING, autoUpdateSuccessfulConsole, 120, "*", true);
+            }
+        } else {
+            final String[] autoUpdateFailed = new String[] {
+                    ChatColor.RED + "Could not downloaded " + ChatColor.GOLD + updateChecker.getPlugin().getName() + " " + updateChecker.getLatestVersion() + ChatColor.GREEN + "."
+            };
+            if (sender instanceof Player) {
+                sender.sendMessage("");
+                sender.sendMessage(autoUpdateFailed);
+            } else {
+                List<String> autoUpdateFailedConsole = Arrays.asList(autoUpdateFailed);
+                if (!updateChecker.isColoredConsoleOutput()) {
+                    for (int i = 0; i < autoUpdateFailedConsole.size(); i++) {
+                        autoUpdateFailedConsole.set(i, ChatColor.stripColor(autoUpdateFailedConsole.get(i)));
+                    }
+                }
+                printNiceBoxToConsole(updateChecker.getPlugin().getLogger(), Level.WARNING, autoUpdateFailedConsole, 120, "*", true);
+            }
+        }
+    }
+
     private static void printNiceBoxToConsole(Logger logger, Level level, List<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
         int longestLine = 0;
         for (String line : lines) {
@@ -110,7 +153,7 @@ class Messages {
         logger.log(level, dash.toString());
     }
 
-    private static void sendLinks(@NotNull final Player... players) {
+    private static void sendLinks(@NotNull final Player player) {
 
         UpdateChecker instance = UpdateChecker.getInstance();
 
@@ -145,9 +188,8 @@ class Messages {
             }
         }
 
-        // MrNemo64 start
-        for (Player player : players)
-            player.spigot().sendMessage(text);
-        // MrNemo64 end
+        player.spigot().sendMessage(text);
+
+
     }
 }

@@ -1,5 +1,6 @@
 package de.jeff_media.updatechecker;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,15 +25,20 @@ class InternalUpdateCheckListener implements Listener {
 
     @EventHandler
     public void onUpdateCheck(UpdateCheckEvent event) {
-        if (!instance.isNotifyRequesters()) return;
-        if (event.getRequesters() == null) return;
-        for (CommandSender commandSender : event.getRequesters()) {
-            if (commandSender instanceof Player) {
-                Messages.printCheckResultToPlayer((Player) commandSender, true);
-            } else {
-                Messages.printCheckResultToConsole(event);
-            }
 
+        if (instance.isNotifyRequesters()) {
+            if (event.getRequesters() != null) {
+                for (CommandSender commandSender : event.getRequesters()) {
+                    if (commandSender instanceof Player) {
+                        Messages.printCheckResultToPlayer((Player) commandSender, true);
+                    } else {
+                        Messages.printCheckResultToConsole(event);
+                    }
+                }
+            }
+        }
+        if(event.getAutoUpdate() && event.getSuccess() == UpdateCheckSuccess.SUCCESS && !UpdateChecker.getInstance().isUsingLastestVersion() && !event.getLatestVersion().equals(UpdateChecker.getInstance().getLastAutoUpdateVersion())) {
+            AutoUpdater.update(event.getRequesters());
         }
     }
 

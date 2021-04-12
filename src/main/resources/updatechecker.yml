@@ -1,0 +1,14 @@
+##########################################################
+#                   SpigotUpdateChecker                  #
+##########################################################
+#                                                        #
+#                JEFF Media GbR / mfnalex                #
+# https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker #
+#                                                        #
+##########################################################
+
+check-on-startup: true
+check-every-x-hours: 6
+auto-update: false
+notify-ops-on-join: true
+colored-console-output: false

@@ -15,6 +15,7 @@ public class UpdateCheckEvent extends Event {
     private final UpdateChecker instance;
     private final UpdateCheckResult result;
     private final UpdateCheckSuccess success;
+    private boolean autoUpdate = false;
     private @Nullable CommandSender[] requesters = null;
 
     protected UpdateCheckEvent(UpdateCheckSuccess success) {
@@ -29,6 +30,15 @@ public class UpdateCheckEvent extends Event {
                 result = UpdateCheckResult.NEW_VERSION_AVAILABLE;
             }
         }
+    }
+
+    protected boolean getAutoUpdate() {
+        return autoUpdate;
+    }
+
+    protected UpdateCheckEvent setAutoUpdate(boolean autoUpdate) {
+        this.autoUpdate = autoUpdate;
+        return this;
     }
 
     public static HandlerList getHandlerList() {
