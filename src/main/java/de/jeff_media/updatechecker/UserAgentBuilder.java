@@ -5,6 +5,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Creates a User-Agent string. Always starts with "JEFF-Media-GbR-SpigotUpdateChecker/[version]" followed by all added parameters.
@@ -13,7 +14,7 @@ public class UserAgentBuilder {
 
     private final StringBuilder builder = new StringBuilder("JEFF-Media-GbR-SpigotUpdateChecker/").append(UpdateChecker.VERSION);
     private final UpdateChecker instance = UpdateChecker.getInstance();
-    private final ArrayList<String> list = new ArrayList<>();
+    private final List<String> list = new ArrayList<>();
     private final Plugin plugin = instance.getPlugin();
 
     /**
@@ -84,7 +85,7 @@ public class UserAgentBuilder {
      * @return
      */
     public UserAgentBuilder addSpigotUserId() {
-        String uid = instance.usingPaidVersion ? instance.spigotUserId : "none";
+        String uid = instance.isUsingPaidVersion() ? instance.getSpigotUserId() : "none";
         list.add("SpigotUID/" + uid);
         return this;
     }
@@ -95,7 +96,7 @@ public class UserAgentBuilder {
      * @return
      */
     public UserAgentBuilder addUsingPaidVersion() {
-        list.add("Paid/" + instance.usingPaidVersion);
+        list.add("Paid/" + instance.isUsingPaidVersion());
         return this;
     }
 

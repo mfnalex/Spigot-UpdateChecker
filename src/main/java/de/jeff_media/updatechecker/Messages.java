@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -48,13 +49,13 @@ class Messages {
             return;
         }
 
-        ArrayList<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<>();
 
         lines.add(String.format("There is a new version of %s available!", plugin.getName()));
-        lines.add(String.format("  Your version: %s%s", instance.coloredConsoleOutput ? ChatColor.RED : "", event.getUsedVersion()));
-        lines.add(String.format("Latest version: %s%s", instance.coloredConsoleOutput ? ChatColor.GREEN : "", event.getLatestVersion()));
+        lines.add(String.format("  Your version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
+        lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
 
-        ArrayList<String> downloadLinks = instance.getAppropiateDownloadLinks();
+        List<String> downloadLinks = instance.getAppropiateDownloadLinks();
 
         if (downloadLinks.size() > 0) {
             lines.add(" ");
@@ -77,21 +78,21 @@ class Messages {
 
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
-        if(instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
+        if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
             player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.cachedLatestVersion + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.usedVersion);
+            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
             player.sendMessage("");
-        } else if(instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
+        } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
             player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
         } else {
-            if(showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN+"You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+            if (showMessageWhenLatestVersion) {
+                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
             }
         }
     }
 
-    private static void printNiceBoxToConsole(Logger logger, Level level, ArrayList<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
+    private static void printNiceBoxToConsole(Logger logger, Level level, List<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
         int longestLine = 0;
         for (String line : lines) {
             longestLine = Math.max(line.length(), longestLine);
@@ -109,17 +110,17 @@ class Messages {
         logger.log(level, dash.toString());
     }
 
-    private static void sendLinks(@NotNull final Player player) {
+    private static void sendLinks(@NotNull final Player... players) {
 
         UpdateChecker instance = UpdateChecker.getInstance();
 
-        ArrayList<TextComponent> links = new ArrayList<>();
+        List<TextComponent> links = new ArrayList<>();
 
-        ArrayList<String> downloadLinks = instance.getAppropiateDownloadLinks();
+        List<String> downloadLinks = instance.getAppropiateDownloadLinks();
 
         if (downloadLinks.size() == 2) {
-            links.add(createLink(String.format("Download (%s)", instance.namePaidVersion), downloadLinks.get(0)));
-            links.add(createLink(String.format("Download (%s)", instance.nameFreeVersion), downloadLinks.get(1)));
+            links.add(createLink(String.format("Download (%s)", instance.getNamePaidVersion()), downloadLinks.get(0)));
+            links.add(createLink(String.format("Download (%s)", instance.getNameFreeVersion()), downloadLinks.get(1)));
         } else if (downloadLinks.size() == 1) {
             links.add(createLink("Download", downloadLinks.get(0)));
         }
@@ -144,6 +145,9 @@ class Messages {
             }
         }
 
-        player.spigot().sendMessage(text);
+        // MrNemo64 start
+        for (Player player : players)
+            player.spigot().sendMessage(text);
+        // MrNemo64 end
     }
 }

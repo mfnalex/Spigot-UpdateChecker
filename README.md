@@ -5,6 +5,10 @@ The SpigotUpdateChecker is a simple library for you to add a perfectly working u
     <img src="https://api.jeff-media.de/img/updatechecker2.png">
 </p>
 
+Author: mfnalex
+
+Contributors: MrNemo64
+
 ## Features
 You can issue manual and repeated update checks and send the result as ingame message to specific players and/or have them printed to the
 console.

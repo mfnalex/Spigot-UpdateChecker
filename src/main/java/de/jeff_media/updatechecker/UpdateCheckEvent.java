@@ -20,10 +20,10 @@ public class UpdateCheckEvent extends Event {
     protected UpdateCheckEvent(UpdateCheckSuccess success) {
         instance = UpdateChecker.getInstance();
         this.success = success;
-        if (success == UpdateCheckSuccess.FAIL && instance.cachedLatestVersion == null) {
+        if (success == UpdateCheckSuccess.FAIL && instance.getLatestVersion() == null) {
             result = UpdateCheckResult.UNKNOWN;
         } else {
-            if (instance.usedVersion.equals(instance.cachedLatestVersion)) {
+            if (instance.isUsingLastestVersion()) {
                 result = UpdateCheckResult.RUNNING_LATEST_VERSION;
             } else {
                 result = UpdateCheckResult.NEW_VERSION_AVAILABLE;
@@ -46,7 +46,7 @@ public class UpdateCheckEvent extends Event {
      * @return
      */
     public @Nullable String getLatestVersion() {
-        return instance.cachedLatestVersion;
+        return instance.getLatestVersion();
     }
 
     /**
@@ -88,7 +88,7 @@ public class UpdateCheckEvent extends Event {
      * @return
      */
     public @NotNull String getUsedVersion() {
-        return instance.usedVersion;
+        return instance.getUsedVersion();
     }
 
 }
