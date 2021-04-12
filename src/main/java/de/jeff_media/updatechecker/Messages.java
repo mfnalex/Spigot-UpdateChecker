@@ -1,5 +1,14 @@
 package de.jeff_media.updatechecker;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -7,19 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-
 class Messages {
 
-		@NotNull
+    @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
         final ComponentBuilder lore = new ComponentBuilder("Link: ")
                 .bold(true)
@@ -79,16 +78,16 @@ class Messages {
 
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
-        if(instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
+        if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
             player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getCachedLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
+            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
             player.sendMessage("");
-        } else if(instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
+        } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
             player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
         } else {
-            if(showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN+"You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+            if (showMessageWhenLatestVersion) {
+                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
             }
         }
     }
@@ -102,7 +101,7 @@ class Messages {
         if (longestLine > maxLineLengh) longestLine = maxLineLengh;
         if (prefix) longestLine += 2;
         StringBuilder dash = new StringBuilder(longestLine);
-        Stream.generate(() -> dashSymbol).limit(longestLine).forEach(dash::append);
+        Stream.generate(()->dashSymbol).limit(longestLine).forEach(dash::append);
 
         logger.log(level, dash.toString());
         for (String line : lines) {
@@ -147,8 +146,8 @@ class Messages {
         }
 
         // MrNemo64 start
-        for(Player player : players)
-        	player.spigot().sendMessage(text);
-       // MrNemo64 end
+        for (Player player : players)
+            player.spigot().sendMessage(text);
+        // MrNemo64 end
     }
 }

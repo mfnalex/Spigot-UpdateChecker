@@ -1,11 +1,11 @@
 package de.jeff_media.updatechecker;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 /**
  * Creates a User-Agent string. Always starts with "JEFF-Media-GbR-SpigotUpdateChecker/[version]" followed by all added parameters.
@@ -85,7 +85,7 @@ public class UserAgentBuilder {
      * @return
      */
     public UserAgentBuilder addSpigotUserId() {
-        String uid = instance.isUsingPaidVersion() ? instance.getSpigotUserId(): "none";
+        String uid = instance.isUsingPaidVersion() ? instance.getSpigotUserId() : "none";
         list.add("SpigotUID/" + uid);
         return this;
     }

@@ -17,7 +17,7 @@ class InternalUpdateCheckListener implements Listener {
     @EventHandler
     public void notifyOnJoin(PlayerJoinEvent playerJoinEvent) {
         Player player = playerJoinEvent.getPlayer();
-        if ((player.isOp() && instance.isNotifyOpsOnJoin())|| (instance.getNotifyPermission() != null && player.hasPermission(instance.getNotifyPermission()))) {
+        if ((player.isOp() && instance.isNotifyOpsOnJoin()) || (instance.getNotifyPermission() != null && player.hasPermission(instance.getNotifyPermission()))) {
             Messages.printCheckResultToPlayer(player, false);
         }
     }
