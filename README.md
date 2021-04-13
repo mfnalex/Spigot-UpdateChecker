@@ -101,6 +101,32 @@ Users of the free version will now see both links:
 
 Users of the paid version will however only get the paid version's download link, just like in the screenshots at the top.
 
+## Using Consumers
+You can use Consumers to change the behaviour of the Update Checker.
+
+```java
+public class MyPlugin extends JavaPlugin {
+    
+    @Override
+    public void onEnable() {
+        UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
+                .setDownloadLink("https://www.chestsort.de")
+                .onSuccess((commandSenders, latestVersion) -> {
+                    for(CommandSender sender : commandSenders) {
+                        sender.sendMessage("This code will run after the update check was successfull.");
+                    }
+                })
+                .onFail((commandSenders, exception) -> {
+                    for(CommandSender sender : commandSenders) {
+                        sender.sendMessage("This code will run after the update check failed.");
+                    }
+                })
+                .setNotifyRequesters(false) // Do not show the default messages, instead only run our custom consumers
+                .checkNow();
+    }
+}
+```
+
 ## Maven
 The UpdateChecker is available in my public repository:
 ```xml
@@ -114,7 +140,7 @@ The UpdateChecker is available in my public repository:
     <dependency>
         <groupId>de.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>1.0.0</version> <!-- Check on GitHub for the latest version -->
+        <version>1.1.0</version> <!-- Check on GitHub for the latest version -->
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -154,7 +180,7 @@ Please note that you will also have to shade and relocate the UpdateChecker into
 </build>
 ```
 
-**Failing to relocate the package will make the UpdateChecker throw an exception, so CHANGE IT!**
+**Failing to relocate the package will make the UpdateChecker throw an exception, so RELOCATE IT!**
 
 ## JavaDocs and Example plugin
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
