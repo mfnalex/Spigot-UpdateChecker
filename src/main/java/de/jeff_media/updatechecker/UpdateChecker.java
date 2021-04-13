@@ -1,5 +1,6 @@
 package de.jeff_media.updatechecker;
 
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -29,7 +30,7 @@ public class UpdateChecker {
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
     private String apiLink = null;
-    private String cachedLatestVersion = null;
+    private String latestVersion = null;
     private String changelogLink = null;
     private boolean coloredConsoleOutput = false;
     private String donationLink = null;
@@ -59,7 +60,8 @@ public class UpdateChecker {
     }
 
     /**
-     * Gets the UpdateChecker instance
+     * Gets the current UpdateChecker singleton
+     * @return UpdateChecker instance being ran
      */
     public static UpdateChecker getInstance() {
         if (instance == null) {
@@ -75,8 +77,9 @@ public class UpdateChecker {
      * @param plugin           Main class of your plugin
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String
      *                         from the SpigotMC Web API
-     * @return The UpdateChecker instance
+     * @return UpdateChecker instance being ran
      */
+
     public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
         return init(plugin, SPIGOT_UPDATE_API + spigotResourceId);
     }
@@ -88,7 +91,7 @@ public class UpdateChecker {
      * @param plugin  Main class of your plugin
      * @param apiLink HTTP(S) link to a file containing a string with the latest
      *                version of your plugin.
-     * @return The UpdateChecker instance
+     * @return UpdateChecker instance being ran
      */
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
         Objects.requireNonNull(plugin, "Plugin cannot be null.");
@@ -112,14 +115,14 @@ public class UpdateChecker {
     }
 
     /**
-     * Starts to check every X hours for updates - If a task is already running, it
+     * Starts to check every X hours for updates. If a task is already running, it
      * gets cancelled and replaced with the new one, so don't be afraid to use this
      * in your reload function. The first check will also happen after X hours so
      * you might want to call checkNow() too. When you set notifyRequesters to true
      * (default), the Console will get a notification about the check result.
      *
      * @param hours Amount of hours in between checks
-     * @return The UpdateChecker instance
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker checkEveryXHours(double hours) {
         double minutes = hours * 60;
@@ -141,6 +144,38 @@ public class UpdateChecker {
      */
     public void checkNow() {
         checkNow(Bukkit.getConsoleSender());
+    }
+
+    /**
+     * Checks whether one version is really newer than another according to the semantic versioning scheme, including letters.
+     *
+     * @param myVersion One version string
+     * @param otherVersion Another version string
+     * @return true if the other version is indeed newer, otherwise false
+     */
+    public static boolean isOtherVersionNewer(String myVersion, String otherVersion) {
+        DefaultArtifactVersion used = new DefaultArtifactVersion(myVersion);
+        DefaultArtifactVersion latest = new DefaultArtifactVersion(otherVersion);
+        return used.compareTo(latest) < 0;
+    }
+
+    /**
+     * Checks that the class was properly relocated. Proudly stolen from bStats.org
+     */
+    private void checkRelocation() {
+        final String defaultPackage = new String(new byte[] {'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String examplePackage = new String(new byte[] {'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
+        if (this.getClass().getPackage().getName().startsWith(defaultPackage) || this.getClass().getPackage().getName().startsWith(examplePackage)) {
+            throw new IllegalStateException("UpdateChecker class has not been relocated correctly!");
+        }
+    }
+
+    /**
+     * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
+     * @return true if the Spigot User ID placeholder has been properly replaced by a numeric string
+     */
+    private boolean detectPaidVersion() {
+        return spigotUserId.matches("^[0-9]+$");
     }
 
     /**
@@ -173,8 +208,13 @@ public class UpdateChecker {
                 }
                 final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
                 final BufferedReader reader = new BufferedReader(input);
-                cachedLatestVersion = reader.readLine().trim();
+                latestVersion = reader.readLine().trim();
                 reader.close();
+
+                if (!isUsingLatestVersion() && !isOtherVersionNewer(usedVersion, latestVersion)) {
+                    latestVersion = usedVersion;
+                }
+
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
             } catch (final Exception e) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
@@ -186,7 +226,7 @@ public class UpdateChecker {
             Bukkit.getScheduler().runTask(main, ()->{
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
-                    getOnSuccess().accept(requesters, cachedLatestVersion);
+                    getOnSuccess().accept(requesters, latestVersion);
                 }
 
                 Bukkit.getPluginManager().callEvent(finalUpdateCheckEvent);
@@ -196,18 +236,54 @@ public class UpdateChecker {
     }
 
     /**
-     * Checks that the class was properly relocated. Proudly stolen from bStats.org
+     * Returns the changelog link
+     *
+     * @return Changelog Link
      */
-    private void checkRelocation() {
-        final String defaultPackage = new String(new byte[] {'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
-        final String examplePackage = new String(new byte[] {'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
-        if (this.getClass().getPackage().getName().startsWith(defaultPackage) || this.getClass().getPackage().getName().startsWith(examplePackage)) {
-            throw new IllegalStateException("UpdateChecker class has not been relocated correctly!");
-        }
+    public String getChangelogLink() {
+        return changelogLink;
     }
 
-    private boolean detectPaidVersion() {
-        return spigotUserId.matches("^[0-9]+$");
+    /**
+     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC
+     * Resource ID
+     *
+     * @param spigotResourceId Spigot Resource ID
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setChangelogLink(int spigotResourceId) {
+        return setChangelogLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId + SPIGOT_CHANGELOG_SUFFIX);
+    }
+
+    /**
+     * Sets a link to your plugin's changelog.
+     *
+     * @param link Changelog link
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setChangelogLink(@Nullable String link) {
+        changelogLink = link;
+        return this;
+    }
+
+    /**
+     * Returns the donation link
+     *
+     * @return Donation link
+     */
+    public String getDonationLink() {
+        return donationLink;
+    }
+
+    /**
+     * Sets a link to your plugin's donation website
+     *
+     * @param donationLink Donation link
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setDonationLink(@Nullable String donationLink) {
+        this.donationLink = donationLink;
+        return this;
     }
 
     /**
@@ -229,7 +305,7 @@ public class UpdateChecker {
      * @return List of zero to two download links. If the list contains two links,
      * the first element is the paid download link.
      */
-    public List<String> getAppropiateDownloadLinks() {
+    public List<String> getAppropriateDownloadLinks() {
         List<String> list = new ArrayList<>();
 
         if (usingPaidVersion) {
@@ -250,95 +326,35 @@ public class UpdateChecker {
     }
 
     /**
-     * Returns the changelog link
+     * Returns the last successful UpdateCheckResult
      *
-     * @return
-     */
-    public String getChangelogLink() {
-        return changelogLink;
-    }
-
-    /**
-     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC
-     * Resource ID
-     *
-     * @param spigotResourceId
-     * @return
-     */
-    public UpdateChecker setChangelogLink(int spigotResourceId) {
-        return setChangelogLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId + SPIGOT_CHANGELOG_SUFFIX);
-    }
-
-    /**
-     * Sets a link to your plugin's changelog.
-     *
-     * @param link
-     * @return
-     */
-    public UpdateChecker setChangelogLink(@Nullable String link) {
-        changelogLink = link;
-        return this;
-    }
-
-    /**
-     * Returns the donation link
-     *
-     * @return
-     */
-    public String getDonationLink() {
-        return donationLink;
-    }
-
-    /**
-     * Sets a link to your plugin's donation website
-     *
-     * @param donationLink
-     * @return
-     */
-    public UpdateChecker setDonationLink(@Nullable String donationLink) {
-        this.donationLink = donationLink;
-        return this;
-    }
-
-    /**
-     * Returns the last successful Check Result
-     *
-     * @return
+     * @return Last successful UpdateCheckResult
      */
     public UpdateCheckResult getLastCheckResult() {
-        if (cachedLatestVersion == null) {
+        if (latestVersion == null) {
             return UpdateCheckResult.UNKNOWN;
         }
-        if (cachedLatestVersion.equals(usedVersion)) {
+        if (latestVersion.equals(usedVersion)) {
             return UpdateCheckResult.RUNNING_LATEST_VERSION;
         }
         return UpdateCheckResult.NEW_VERSION_AVAILABLE;
     }
 
     /**
-     * Returns the latest version string found by the UpdateChecker, or null if all
-     * checks until yet have failed.
-     *
-     * @return
-     */
-    public String getLatestVersion() {
-        return cachedLatestVersion;
-    }
-
-    /**
-     * @return
+     * Returns the name/suffix of the free plugin version
+     * @return Name/suffix of the free plugin version
      */
     public String getNameFreeVersion() {
         return nameFreeVersion;
     }
 
     /**
-     * Sets the suffix for the free version's name. E.g. when you set this to
+     * Sets the name/suffix for the free version's name. E.g. when you set this to
      * "Free", the Download link for the free version will be shown as "Download
      * (Free): [Link]"
      *
-     * @param nameFreeVersion
-     * @return
+     * @param nameFreeVersion Name/suffix of the free plugin version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setNameFreeVersion(String nameFreeVersion) {
         this.nameFreeVersion = nameFreeVersion;
@@ -346,19 +362,30 @@ public class UpdateChecker {
     }
 
     /**
-     * @return
+     * Returns the name/suffix of the paid plugin version
+     * @return Name/suffix of the paid plugin version
      */
     public String getNamePaidVersion() {
         return namePaidVersion;
     }
 
     /**
-     * Sets the suffix for the paid version's name. E.g. when you set this to
+     * Returns the latest version string found by the UpdateChecker, or null if all
+     * checks until yet have failed.
+     *
+     * @return Latest version string found by the UpdateChecker
+     */
+    public String getLatestVersion() {
+        return latestVersion;
+    }
+
+    /**
+     * Sets the name/suffix for the paid version's name. E.g. when you set this to
      * "Platinum version", the Download link for the paid version will be shown as
      * "Download (Platinum version): [Link]"
      *
-     * @param namePaidVersion
-     * @return
+     * @param namePaidVersion Name/suffix of the paid plugin version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setNamePaidVersion(String namePaidVersion) {
         this.namePaidVersion = namePaidVersion;
@@ -366,15 +393,16 @@ public class UpdateChecker {
     }
 
     /**
-     * @return the notifyPermission
+     * Returns the permission required to receive UpdateChecker messages on join
+     * @return Permission required to receive UpdateChecker messages on join, or null if not set
      */
-    public String getNotifyPermission() {
+    public @Nullable String getNotifyPermission() {
         return notifyPermission;
     }
 
     /**
-     * Gets the task that will run when/after the update checks fails.
-     * @return
+     * Gets the task that will run when/after the update check fails.
+     * @return Task that will run when/after the update check fails.
      */
     public BiConsumer<CommandSender[], Exception> getOnFail() {
         return onFail;
@@ -382,31 +410,31 @@ public class UpdateChecker {
 
     /**
      * Gets the task that will run when/after the update check succeeds.
-     * @return
+     * @return Task that will run when/after the update check succeeds.
      */
     public BiConsumer<CommandSender[], String> getOnSuccess() {
         return onSuccess;
     }
 
     /**
-     * Gets the plugin
-     * @return
+     * Gets the plugin that instantiated this UpdateChecker instance
+     * @return Plugin that instantiated this UpdateChecker instance
      */
     protected Plugin getPlugin() {
         return main;
     }
 
     /**
-     * Gets the Spigot User ID if this is a premium plugin, otherwise it will return %%__USER__%%
-     * @return
+     * Gets the Spigot User ID of the user who downloaded the plugin if it's a premium plugin, otherwise "%%__USER__%%"
+     * @return Spigot User ID of the user who downloaded the plugin if it's a premium plugin, otherwise "%%__USER__%%"
      */
     public String getSpigotUserId() {
         return spigotUserId;
     }
 
     /**
-     * Gets the version string of the currently used plugin version.
-     * @return
+     * Gets the version string of the currently used plugin version
+     * @return Version string of the currently used plugin version
      */
     public String getUsedVersion() {
         return usedVersion;
@@ -414,7 +442,7 @@ public class UpdateChecker {
 
     /**
      * Returns whether colored console output is enabled
-     * @return
+     * @return true when colored console output is enabled, otherwise false
      */
     public boolean isColoredConsoleOutput() {
         return coloredConsoleOutput;
@@ -422,8 +450,8 @@ public class UpdateChecker {
 
     /**
      * Sets whether or not the used and latest version will be displayed in color in the console
-     * @param coloredConsoleOutput
-     * @return
+     * @param coloredConsoleOutput Whether to use color in the console output
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setColoredConsoleOutput(boolean coloredConsoleOutput) {
         this.coloredConsoleOutput = coloredConsoleOutput;
@@ -432,7 +460,7 @@ public class UpdateChecker {
 
     /**
      * Returns whether OPs will be notified on join when a new version is available
-     * @return
+     * @return true when OPs will be notified on join when a new version is available, otherwise false
      */
     public boolean isNotifyOpsOnJoin() {
         return notifyOpsOnJoin;
@@ -440,8 +468,8 @@ public class UpdateChecker {
 
     /**
      * Whether or not to inform OPs on join when there is a new version available.
-     * @param notifyOpsOnJoin
-     * @return
+     * @param notifyOpsOnJoin Whether to inform on OPs on join when there is a new version available
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setNotifyOpsOnJoin(boolean notifyOpsOnJoin) {
         this.notifyOpsOnJoin = notifyOpsOnJoin;
@@ -449,8 +477,8 @@ public class UpdateChecker {
     }
 
     /**
-     * Returns the permission that is needed to be informed about a new version on join
-     * @return
+     * Gets whether the given CommandSenders will be informed about UpdateChecker results
+     * @return Whether or not to inform given CommandSenders about UpdateChecker results
      */
     public boolean isNotifyRequesters() {
         return notifyRequesters;
@@ -459,8 +487,8 @@ public class UpdateChecker {
     /**
      * Whether or not CommandSenders who request an update check will be notified of the result.
      * When you use your own tasks using onSuccess and onFail, consider setting this to false.
-     * @param notify
-     * @return
+     * @param notify Whether or not to notify given CommandSenders about UpdateChecker results
+     * @return true when CommandSenders will be notified, otherwise false
      */
     public UpdateChecker setNotifyRequesters(boolean notify) {
         notifyRequesters = notify;
@@ -468,16 +496,16 @@ public class UpdateChecker {
     }
 
     /**
-     * Checks whether the latest version of the plugin is being used.
-     * @return
+     * Checks whether the latest found version of the plugin is being used.
+     * @return true if the latest found version is the one currently in use, otherwise false
      */
-    public boolean isUsingLastestVersion() {
-        return usedVersion.equals(instance.cachedLatestVersion);
+    public boolean isUsingLatestVersion() {
+        return usedVersion.equals(instance.latestVersion);
     }
 
     /**
      * Returns whether the paid version of the plugin is installed.
-     * @return
+     * @return True if the paid version is used, otherwise false
      */
     public boolean isUsingPaidVersion() {
         return usingPaidVersion;
@@ -490,8 +518,8 @@ public class UpdateChecker {
      * not set, the Update Checker automatically sets this to true by checking the
      * %%__USER__%% placeholder, see
      * https://www.spigotmc.org/wiki/premium-resource-placeholders-identifiers/
-     * @param paidVersion
-     * @return
+     * @param paidVersion Whether or not the user is using the paid version of your plugin
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setUsingPaidVersion(boolean paidVersion) {
         usingPaidVersion = paidVersion;
@@ -500,8 +528,8 @@ public class UpdateChecker {
 
     /**
      * Sets a task that will run when/after the update check has failed.
-     * @param onFail
-     * @return
+     * @param onFail Task that will run when/after the update check has failed.
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker onFail(BiConsumer<CommandSender[], Exception> onFail) {
         this.onFail = onFail == null ? (requesters, ex)->ex.printStackTrace() : onFail;
@@ -510,8 +538,8 @@ public class UpdateChecker {
 
     /**
      * Sets a task that will run when/after the update check has succeeded.
-     * @param onSuccess
-     * @return
+     * @param onSuccess Task that will run when/after the update check has succeeded.
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker onSuccess(BiConsumer<CommandSender[], String> onSuccess) {
         this.onSuccess = onSuccess == null ? (requesters, latestVersion)->{
@@ -524,8 +552,8 @@ public class UpdateChecker {
      * Resource ID. Use this if there is only one version of your plugin, either
      * only a free or only a paid version.
      *
-     * @param spigotResourceId
-     * @return
+     * @param spigotResourceId Spigot Resource ID
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setDownloadLink(int spigotResourceId) {
         return setDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
@@ -535,8 +563,8 @@ public class UpdateChecker {
      * Sets the download link for your plugin. Use this if there is only one version
      * of your plugin, either only a free or only a paid version.
      *
-     * @param downloadLink
-     * @return
+     * @param downloadLink Download link
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setDownloadLink(@Nullable String downloadLink) {
         this.paidDownloadLink = null;
@@ -549,8 +577,8 @@ public class UpdateChecker {
      * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId
-     * @return
+     * @param spigotResourceId Spigot Resource ID of the free version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setFreeDownloadLink(int spigotResourceId) {
         return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
@@ -560,8 +588,8 @@ public class UpdateChecker {
      * Sets the download link for the free version of your plugin. Use this if there
      * is both, a free and a paid version of your plugin available.
      *
-     * @param freeDownloadLink
-     * @return
+     * @param freeDownloadLink Download link of the free version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setFreeDownloadLink(@Nullable String freeDownloadLink) {
         this.freeDownloadLink = freeDownloadLink;
@@ -569,11 +597,10 @@ public class UpdateChecker {
     }
 
     /**
-     * You can set a permission name. Players joining with this permission will be
-     * informed when there is a new version available.
+     * Sets the permission needed to be informed about UpdateChecker results on join.
      *
-     * @param permission
-     * @return
+     * @param permission Permission needed to be informed about UpdateChecker results on join
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setNotifyByPermissionOnJoin(@Nullable String permission) {
         notifyPermission = permission;
@@ -585,8 +612,8 @@ public class UpdateChecker {
      * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId
-     * @return
+     * @param spigotResourceId Spigot Resource ID of the paid version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setPaidDownloadLink(int spigotResourceId) {
         return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
@@ -596,8 +623,8 @@ public class UpdateChecker {
      * Sets the download link for the paid version of your plugin. Use this if there
      * is both, a free and a paid version of your plugin available.
      *
-     * @param link
-     * @return
+     * @param link Download link of the paid version
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setPaidDownloadLink(@NotNull String link) {
         paidDownloadLink = link;
@@ -608,7 +635,7 @@ public class UpdateChecker {
      * Sets the timeout for the HTTP(S) connection in milliseconds. 0 = use Java's
      * default value
      *
-     * @param timeout
+     * @param timeout Timeout in milliseconds, or 0 to use Java's default value
      */
     public UpdateChecker setTimeout(int timeout) {
         this.timeout = timeout;
@@ -618,8 +645,8 @@ public class UpdateChecker {
     /**
      * Sets the UserAgent string using a UserAgentBuilder
      *
-     * @param userAgentBuilder
-     * @return
+     * @param userAgentBuilder UserAgentBuilder instance
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setUserAgent(@NotNull UserAgentBuilder userAgentBuilder) {
         userAgentString = userAgentBuilder.build();
@@ -629,8 +656,8 @@ public class UpdateChecker {
     /**
      * Sets the UserAgent string using plain text
      *
-     * @param userAgent
-     * @return
+     * @param userAgent UserAgent string
+     * @return UpdateChecker instance being ran
      */
     public UpdateChecker setUserAgent(@Nullable String userAgent) {
         userAgentString = userAgent;
@@ -638,7 +665,7 @@ public class UpdateChecker {
     }
 
     /**
-     * Stops the scheduled update checks - THIS IS NOT NEEDED when calling
+     * Stops the scheduled update checks. THIS IS NOT NEEDED when calling
      * checkEveryXHours(double) again, as the UpdateChecker will automatically stop
      * its previous task.
      */
@@ -648,7 +675,5 @@ public class UpdateChecker {
         }
         taskId = -1;
     }
-
-    // MrNemo64 end
 
 }

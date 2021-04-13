@@ -23,7 +23,7 @@ public class UpdateCheckEvent extends Event {
         if (success == UpdateCheckSuccess.FAIL && instance.getLatestVersion() == null) {
             result = UpdateCheckResult.UNKNOWN;
         } else {
-            if (instance.isUsingLastestVersion()) {
+            if (instance.isUsingLatestVersion()) {
                 result = UpdateCheckResult.RUNNING_LATEST_VERSION;
             } else {
                 result = UpdateCheckResult.NEW_VERSION_AVAILABLE;
@@ -41,9 +41,9 @@ public class UpdateCheckEvent extends Event {
     }
 
     /**
-     * Returns the latest version string found by the UpdateChecker, or null if all checks until yet have failed.
+     * Returns the latest version string found by the UpdateChecker, or null if all previous checks have failed.
      *
-     * @return
+     * @return Latest version string found by the UpdateChecker, or null if all previous checks have failed
      */
     public @Nullable String getLatestVersion() {
         return instance.getLatestVersion();
@@ -52,13 +52,18 @@ public class UpdateCheckEvent extends Event {
     /**
      * Gets an array of all CommandSenders who have requested this update check. Normally this will either be the ConsoleCommandSender or a player.
      *
-     * @return
+     * @return Array of all CommandSenders who have requested this update check
      */
     public @Nullable CommandSender[] getRequesters() {
         if (requesters == null || requesters.length == 0) return null;
         return requesters;
     }
 
+    /**
+     * Sets the CommandSenders who requested this update check.
+     * @param requesters CommandSenders who requested this update check
+     * @return UpdateCheckEvent instance
+     */
     protected UpdateCheckEvent setRequesters(@Nullable CommandSender... requesters) {
         this.requesters = requesters;
         return this;
@@ -67,7 +72,7 @@ public class UpdateCheckEvent extends Event {
     /**
      * Gets the result, i.e. whether a new version is available or not.
      *
-     * @return
+     * @return UpdateCheckResult of this update check
      */
     public UpdateCheckResult getResult() {
         return result;
@@ -76,7 +81,7 @@ public class UpdateCheckEvent extends Event {
     /**
      * Checks whether the update checking attempt was successful or failed.
      *
-     * @return
+     * @return UpdateCheckSuccess of this update check
      */
     public UpdateCheckSuccess getSuccess() {
         return success;
@@ -85,7 +90,7 @@ public class UpdateCheckEvent extends Event {
     /**
      * Gets the version string of the currently used plugin version.
      *
-     * @return
+     * @return Version string of the currently used plugin version
      */
     public @NotNull String getUsedVersion() {
         return instance.getUsedVersion();

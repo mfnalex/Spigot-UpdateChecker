@@ -20,7 +20,7 @@ public class UserAgentBuilder {
     /**
      * Returns the default User-Agent, consisting of Plugin name and version, Server version and Bukkit version
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public static UserAgentBuilder getDefaultUserAgent() {
         return new UserAgentBuilder().addPluginNameAndVersion().addServerVersion().addBukkitVersion();
@@ -29,7 +29,7 @@ public class UserAgentBuilder {
     /**
      * Adds the Bukkit version. For example "BukkitVersion/1.16.5-R0.1-SNAPSHOT"
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addBukkitVersion() {
         list.add("BukkitVersion/" + Bukkit.getBukkitVersion());
@@ -41,7 +41,7 @@ public class UserAgentBuilder {
      *
      * @param key   Key
      * @param value Value
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addKeyValue(String key, String value) {
         list.add(key + "/" + value);
@@ -51,8 +51,8 @@ public class UserAgentBuilder {
     /**
      * Adds a custom string. For example "foo"
      *
-     * @param text
-     * @return
+     * @param text Custom string
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addPlaintext(String text) {
         list.add(text);
@@ -62,7 +62,7 @@ public class UserAgentBuilder {
     /**
      * Adds the plugin and version. For example "AngelChest/3.11.0"
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addPluginNameAndVersion() {
         list.add(plugin.getName() + "/" + plugin.getDescription().getVersion());
@@ -72,7 +72,7 @@ public class UserAgentBuilder {
     /**
      * Adds the Server version. For example "ServerVersion/git-Paper-584 (MC: 1.16.5)"
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addServerVersion() {
         list.add("ServerVersion/" + Bukkit.getVersion());
@@ -82,7 +82,7 @@ public class UserAgentBuilder {
     /**
      * Returns the Spigot User ID of the user who downloaded the plugin. Only works for paid plugins from SpigotMC.org. For example "SpigotUID/175238"
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addSpigotUserId() {
         String uid = instance.isUsingPaidVersion() ? instance.getSpigotUserId() : "none";
@@ -93,13 +93,17 @@ public class UserAgentBuilder {
     /**
      * Returns whether this copy of the .jar is a paid plugin downloaded from SpigotMC.org. For example "Paid/true"
      *
-     * @return
+     * @return UserAgentBuilder instance
      */
     public UserAgentBuilder addUsingPaidVersion() {
         list.add("Paid/" + instance.isUsingPaidVersion());
         return this;
     }
 
+    /**
+     * Converts this UserAgentBuilder instance to a UserAgent string
+     * @return UserAgent string
+     */
     protected String build() {
         if (list.size() > 0) {
             builder.append(" (");

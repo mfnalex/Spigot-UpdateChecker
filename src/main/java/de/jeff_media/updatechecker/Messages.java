@@ -55,7 +55,7 @@ class Messages {
         lines.add(String.format("  Your version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
         lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
 
-        List<String> downloadLinks = instance.getAppropiateDownloadLinks();
+        List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
         if (downloadLinks.size() > 0) {
             lines.add(" ");
@@ -73,7 +73,7 @@ class Messages {
             }
         }
 
-        printNiceBoxToConsole(plugin.getLogger(), Level.WARNING, lines, 120, "*", true);
+        printNiceBoxToConsole(plugin.getLogger(), lines);
     }
 
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
@@ -92,22 +92,22 @@ class Messages {
         }
     }
 
-    private static void printNiceBoxToConsole(Logger logger, Level level, List<String> lines, int maxLineLengh, String dashSymbol, boolean prefix) {
+    private static void printNiceBoxToConsole(Logger logger, List<String> lines) {
         int longestLine = 0;
         for (String line : lines) {
             longestLine = Math.max(line.length(), longestLine);
         }
         longestLine += 2;
-        if (longestLine > maxLineLengh) longestLine = maxLineLengh;
-        if (prefix) longestLine += 2;
+        if (longestLine > 120) longestLine = 120;
+        longestLine += 2;
         StringBuilder dash = new StringBuilder(longestLine);
-        Stream.generate(()->dashSymbol).limit(longestLine).forEach(dash::append);
+        Stream.generate(()->"*").limit(longestLine).forEach(dash::append);
 
-        logger.log(level, dash.toString());
+        logger.log(Level.WARNING, dash.toString());
         for (String line : lines) {
-            logger.log(level, (prefix ? dashSymbol + " " : "") + line);
+            logger.log(Level.WARNING, ("*" + " ") + line);
         }
-        logger.log(level, dash.toString());
+        logger.log(Level.WARNING, dash.toString());
     }
 
     private static void sendLinks(@NotNull final Player... players) {
@@ -116,7 +116,7 @@ class Messages {
 
         List<TextComponent> links = new ArrayList<>();
 
-        List<String> downloadLinks = instance.getAppropiateDownloadLinks();
+        List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
         if (downloadLinks.size() == 2) {
             links.add(createLink(String.format("Download (%s)", instance.getNamePaidVersion()), downloadLinks.get(0)));
@@ -145,9 +145,8 @@ class Messages {
             }
         }
 
-        // MrNemo64 start
-        for (Player player : players)
+        for (Player player : players) {
             player.spigot().sendMessage(text);
-        // MrNemo64 end
+        }
     }
 }
