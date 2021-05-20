@@ -142,8 +142,9 @@ public class UpdateChecker {
      * Checks for updates now and sends the result to the console when
      * notifyRequesters is set to true (default)
      */
-    public void checkNow() {
+    public UpdateChecker checkNow() {
         checkNow(Bukkit.getConsoleSender());
+        return this;
     }
 
     /**
@@ -184,7 +185,7 @@ public class UpdateChecker {
      *
      * @param requesters CommandSenders to send the result to, or null
      */
-    public void checkNow(@Nullable CommandSender... requesters) {
+    public UpdateChecker checkNow(@Nullable CommandSender... requesters) {
         if (main == null) {
             throw new IllegalStateException("Plugin has not been set.");
         }
@@ -233,6 +234,7 @@ public class UpdateChecker {
             });
 
         });
+        return this;
     }
 
     /**
@@ -669,11 +671,12 @@ public class UpdateChecker {
      * checkEveryXHours(double) again, as the UpdateChecker will automatically stop
      * its previous task.
      */
-    public void stop() {
+    public UpdateChecker stop() {
         if (taskId != -1) {
             Bukkit.getScheduler().cancelTask(taskId);
         }
         taskId = -1;
+        return this;
     }
 
 }
