@@ -1,3 +1,6 @@
+## 1.2.2
+Fixed message "Could not check for updates" being shown to OPs on join when an update check hasn't been done yet
+
 ## 1.2.1
 Fixed `checkNow()`, `checkNow(CommandSender...)` and `stop()` not returning the instance
 
