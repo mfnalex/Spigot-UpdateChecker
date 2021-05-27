@@ -52,7 +52,7 @@ class Messages {
         List<String> lines = new ArrayList<>();
 
         lines.add(String.format("There is a new version of %s available!", plugin.getName()));
-        lines.add(String.format("Your version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
+        lines.add(String.format("Your version:  %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
         lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
 
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
