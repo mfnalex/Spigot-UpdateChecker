@@ -1,3 +1,6 @@
+## 1.2.3
+Changed console output formatting a tiny bit
+
 ## 1.2.2
 Fixed message "Could not check for updates" being shown to OPs on join when an update check hasn't been done yet
 
