@@ -1,3 +1,6 @@
+## 1.2.4
+Changed relocation of dependencies in pom.xml
+
 ## 1.2.3
 Changed console output formatting a tiny bit
 

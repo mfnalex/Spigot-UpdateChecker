@@ -6,7 +6,7 @@
 
     <groupId>de.jeff_media</groupId>
     <artifactId>SpigotUpdateChecker</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -34,8 +34,8 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>org</pattern>
-                            <shadedPattern>de.jeff_media.updatechecker.lib.org</shadedPattern>
+                            <pattern>org.apache</pattern>
+                            <shadedPattern>de.jeff_media.updatechecker.lib.org.apache</shadedPattern>
                         </relocation>
                     </relocations>
                     <minimizeJar>true</minimizeJar>
