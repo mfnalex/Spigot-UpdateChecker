@@ -43,8 +43,8 @@ public class UpdateChecker {
     private String notifyPermission = null;
     private boolean notifyRequesters = true;
     private boolean suppressUpToDateMessage = false;
-    private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex)->ex.printStackTrace();
-    private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion)->{
+    private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex) -> ex.printStackTrace();
+    private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
     private String paidDownloadLink = null;
     private int taskId = -1;
@@ -52,7 +52,6 @@ public class UpdateChecker {
     private String usedVersion = null;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
-
     /**
      * Use UpdateChecker.init() instead. You can later get the instance by using
      * UpdateChecker.getInstance()
@@ -131,6 +130,15 @@ public class UpdateChecker {
     }
 
     /**
+     * Returns whether the message "You are using the latest version of <PluginName>" will be suppressed.
+     *
+     * @return True when the message will be suppressed, otherwise false
+     */
+    public boolean isSuppressUpToDateMessage() {
+        return suppressUpToDateMessage;
+    }
+
+    /**
      * Starts to check every X hours for updates. If a task is already running, it
      * gets cancelled and replaced with the new one, so don't be afraid to use this
      * in your reload function. The first check will also happen after X hours so
@@ -146,7 +154,7 @@ public class UpdateChecker {
         long ticks = ((int) seconds) * 20;
         stop();
         if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, ()->checkNow(Bukkit.getConsoleSender()), ticks,
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, () -> checkNow(Bukkit.getConsoleSender()), ticks,
                     ticks);
         } else {
             taskId = -1;
@@ -183,7 +191,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(main, ()->{
+        Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -205,12 +213,12 @@ public class UpdateChecker {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
             } catch (final Exception e) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                Bukkit.getScheduler().runTask(main, ()->getOnFail().accept(requesters, e));
+                Bukkit.getScheduler().runTask(main, () -> getOnFail().accept(requesters, e));
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
 
-            Bukkit.getScheduler().runTask(main, ()->{
+            Bukkit.getScheduler().runTask(main, () -> {
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
                     getOnSuccess().accept(requesters, latestVersion);
@@ -227,8 +235,8 @@ public class UpdateChecker {
      * Checks that the class was properly relocated. Proudly stolen from bStats.org
      */
     private void checkRelocation() {
-        final String defaultPackage = new String(new byte[] {'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
-        final String examplePackage = new String(new byte[] {'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
+        final String defaultPackage = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
         if (this.getClass().getPackage().getName().startsWith(defaultPackage) || this.getClass().getPackage().getName().startsWith(examplePackage)) {
             throw new IllegalStateException("UpdateChecker class has not been relocated correctly!");
         }
@@ -562,7 +570,7 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker onFail(BiConsumer<CommandSender[], Exception> onFail) {
-        this.onFail = onFail == null ? (requesters, ex)->ex.printStackTrace() : onFail;
+        this.onFail = onFail == null ? (requesters, ex) -> ex.printStackTrace() : onFail;
         return this;
     }
 
@@ -573,7 +581,7 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker onSuccess(BiConsumer<CommandSender[], String> onSuccess) {
-        this.onSuccess = onSuccess == null ? (requesters, latestVersion)->{
+        this.onSuccess = onSuccess == null ? (requesters, latestVersion) -> {
         } : onSuccess;
         return this;
     }
@@ -606,6 +614,7 @@ public class UpdateChecker {
     /**
      * Sets whether the message "You are using the latest version of <PluginName>" should be suppressed.
      * Defaults to false
+     *
      * @param suppress Whether to suppress the message "You are using the latest version of <PluginName>"
      * @return UpdateChecker instance being ran
      */

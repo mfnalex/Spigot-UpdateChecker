@@ -102,6 +102,7 @@ public class UserAgentBuilder {
 
     /**
      * Converts this UserAgentBuilder instance to a UserAgent string
+     *
      * @return UserAgent string
      */
     protected String build() {

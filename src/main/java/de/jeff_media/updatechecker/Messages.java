@@ -45,6 +45,7 @@ class Messages {
         }
 
         if (event.getResult() == UpdateCheckResult.RUNNING_LATEST_VERSION) {
+            if (UpdateChecker.getInstance().isSuppressUpToDateMessage()) return;
             plugin.getLogger().info(String.format("You are using the latest version of %s.", plugin.getName()));
             return;
         }
@@ -102,7 +103,7 @@ class Messages {
         if (longestLine > 120) longestLine = 120;
         longestLine += 2;
         StringBuilder dash = new StringBuilder(longestLine);
-        Stream.generate(()->"*").limit(longestLine).forEach(dash::append);
+        Stream.generate(() -> "*").limit(longestLine).forEach(dash::append);
 
         logger.log(Level.WARNING, dash.toString());
         for (String line : lines) {

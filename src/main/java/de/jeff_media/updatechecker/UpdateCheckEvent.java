@@ -61,6 +61,7 @@ public class UpdateCheckEvent extends Event {
 
     /**
      * Sets the CommandSenders who requested this update check.
+     *
      * @param requesters CommandSenders who requested this update check
      * @return UpdateCheckEvent instance
      */

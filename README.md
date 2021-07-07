@@ -1,5 +1,7 @@
 # SpigotUpdateChecker
-The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins. **Scroll all the way to the bottom for maven information, JavaDocs and a complete Example Plugin!**
+
+The SpigotUpdateChecker is a simple library for you to add a perfectly working update checker to your plugins. **Scroll
+all the way to the bottom for maven information, JavaDocs and a complete Example Plugin!**
 
 <p align="center">
     <img src="https://api.jeff-media.de/img/updatechecker2.png">
@@ -10,21 +12,24 @@ Author: mfnalex
 Contributors: MrNemo64
 
 ## Features
-You can issue manual and repeated update checks and send the result as ingame message to specific players and/or have them printed to the
-console.
 
-All checks are done asynchronously. When the check is done, a custom event is called. The update checker itself listens to it
-and can automatically notify Operators on Join or players with a specific permission.
+You can issue manual and repeated update checks and send the result as ingame message to specific players and/or have
+them printed to the console.
 
-Of course, you can also just listen to the UpdateCheckEvent yourself to do whatever you like once a new version is detected.
+All checks are done asynchronously. When the check is done, a custom event is called. The update checker itself listens
+to it and can automatically notify Operators on Join or players with a specific permission.
 
-It is also possible to define two download links if your plugin is available as both, a free and paid version, and you can
-add links to your donation page and changelog.
+Of course, you can also just listen to the UpdateCheckEvent yourself to do whatever you like once a new version is
+detected.
+
+It is also possible to define two download links if your plugin is available as both, a free and paid version, and you
+can add links to your donation page and changelog.
 
 You can either provide all those links, including to the API endpoint where the latest version is checked yourself, or
 just provide the SpigotMC Resource ID of your plugin for the Update Checker to get those links automatically.
 
 ## Example
+
 To get a working UpdateChecker, this is already enough:
 
 ```java
@@ -40,7 +45,9 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 ```
-The code above will print a message to the console once a new version is available and also send a message to every OP joining the server. If no new version is found, no message will be sent.
+
+The code above will print a message to the console once a new version is available and also send a message to every OP
+joining the server. If no new version is found, no message will be sent.
 
 Of course, there are many more options you can use. For example:
 
@@ -64,13 +71,14 @@ public class MyPlugin extends JavaPlugin {
 ```
 
 ## Differentiating between free and paid versions
-Now imagine you have two versions of your plugin. One free version and a paid version with extra features,
-like my AngelChest Free and AngelChest Plus plugin. If both plugins share the same codebase and only decide on
-runtime whether to unlock the premium features, you can easily get something like this working:
 
-Users of the free version will get links to both versions, so they can see the advantages of your paid version,
-while we don't want to send the free version link to users who already bought the paid version. The Update Checker
-uses SpigotMC's [Premium Resource Placeholders](https://www.spigotmc.org/wiki/premium-resource-placeholders-identifiers/)
+Now imagine you have two versions of your plugin. One free version and a paid version with extra features, like my
+AngelChest Free and AngelChest Plus plugin. If both plugins share the same codebase and only decide on runtime whether
+to unlock the premium features, you can easily get something like this working:
+
+Users of the free version will get links to both versions, so they can see the advantages of your paid version, while we
+don't want to send the free version link to users who already bought the paid version. The Update Checker uses
+SpigotMC's [Premium Resource Placeholders](https://www.spigotmc.org/wiki/premium-resource-placeholders-identifiers/)
 to detect whether a server is using the paid version, but you can also override this detection using
 *UpdateChecker#setUsingPaidVersion(boolean)*.
 
@@ -81,7 +89,7 @@ public class MyPlugin extends JavaPlugin {
     private static final int ANGELCHEST_FREE = 60383;
     private static final int ANGELCHEST_PLUS = 88214;
     private final boolean usingPaidVersion = howEverYouDetectIt();
-    
+
     @Override
     public void onEnable() {
         UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
@@ -93,31 +101,34 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 ```
+
 Users of the free version will now see both links:
 
 <p align="center">
     <img src="https://api.jeff-media.de/img/updatechecker1.png">
 </p>
 
-Users of the paid version will however only get the paid version's download link, just like in the screenshots at the top.
+Users of the paid version will however only get the paid version's download link, just like in the screenshots at the
+top.
 
 ## Using Consumers
+
 You can use Consumers to change the behaviour of the Update Checker.
 
 ```java
 public class MyPlugin extends JavaPlugin {
-    
+
     @Override
     public void onEnable() {
         UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
                 .setDownloadLink("https://www.chestsort.de")
                 .onSuccess((commandSenders, latestVersion) -> {
-                    for(CommandSender sender : commandSenders) {
+                    for (CommandSender sender : commandSenders) {
                         sender.sendMessage("This code will run after the update check was successfull.");
                     }
                 })
                 .onFail((commandSenders, exception) -> {
-                    for(CommandSender sender : commandSenders) {
+                    for (CommandSender sender : commandSenders) {
                         sender.sendMessage("This code will run after the update check failed.");
                     }
                 })
@@ -128,7 +139,9 @@ public class MyPlugin extends JavaPlugin {
 ```
 
 ## Maven
+
 The UpdateChecker is available in my public repository:
+
 ```xml
 <repositories>
     <repository>
@@ -183,11 +196,13 @@ Please note that you will also have to shade and relocate the UpdateChecker into
 **Failing to relocate the package will make the UpdateChecker throw an exception, so RELOCATE IT!**
 
 ## JavaDocs and Example plugin
+
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
 
 Example plugin: https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker-Example
 
 ## Discord
+
 Feel free to join my Discord for help.
 
 <a href="https://discord.jeff-media.de"><img src="https://api.jeff-media.de/img/discord1.png"></a>
