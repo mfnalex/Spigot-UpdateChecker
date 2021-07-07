@@ -42,6 +42,7 @@ public class UpdateChecker {
     private boolean notifyOpsOnJoin = true;
     private String notifyPermission = null;
     private boolean notifyRequesters = true;
+    private boolean suppressUpToDateMessage = false;
     private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex)->ex.printStackTrace();
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion)->{
     };
@@ -599,6 +600,17 @@ public class UpdateChecker {
     public UpdateChecker setDownloadLink(@Nullable String downloadLink) {
         this.paidDownloadLink = null;
         this.freeDownloadLink = downloadLink;
+        return this;
+    }
+
+    /**
+     * Sets whether the message "You are using the latest version of <PluginName>" should be suppressed.
+     * Defaults to false
+     * @param suppress Whether to suppress the message "You are using the latest version of <PluginName>"
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker suppressUpToDateMessage(boolean suppress) {
+        this.suppressUpToDateMessage = suppress;
         return this;
     }
 
