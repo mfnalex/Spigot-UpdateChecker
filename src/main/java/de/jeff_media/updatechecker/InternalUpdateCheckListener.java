@@ -19,7 +19,7 @@ class InternalUpdateCheckListener implements Listener {
         if (!instance.isCheckedAtLeastOnce()) return;
         Player player = playerJoinEvent.getPlayer();
         if ((player.isOp() && instance.isNotifyOpsOnJoin()) || (instance.getNotifyPermission() != null && player.hasPermission(instance.getNotifyPermission()))) {
-            Messages.printCheckResultToPlayer(player, false);
+            instance.getMessages().printCheckResultToPlayer(player, false);
         }
     }
 
@@ -30,9 +30,9 @@ class InternalUpdateCheckListener implements Listener {
         if (event.getRequesters() == null) return;
         for (CommandSender commandSender : event.getRequesters()) {
             if (commandSender instanceof Player) {
-                Messages.printCheckResultToPlayer((Player) commandSender, true);
+                instance.getMessages().printCheckResultToPlayer((Player) commandSender, true);
             } else {
-                Messages.printCheckResultToConsole(event);
+                instance.getMessages().printCheckResultToConsole(event);
             }
 
         }

@@ -18,23 +18,38 @@ import java.util.stream.Stream;
 
 class Messages {
 
+    private boolean linkBold;
+    private net.md_5.bungee.api.ChatColor linkColor;
+    private String latestVersionMsg;
+    private String cantCheckVersionMsg;
+    private String newVersionMsg1;
+    private String newVersionMsg2;
+
+    public Messages(){
+        linkBold = true;
+        linkColor = net.md_5.bungee.api.ChatColor.GOLD;
+        latestVersionMsg = ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + "%pluginname%";
+        cantCheckVersionMsg = ChatColor.GOLD + "%pluginname%" + ChatColor.RED + " could not check for updates.";
+        newVersionMsg1 = ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + "%pluginname%" + ChatColor.GRAY + " available.";
+        newVersionMsg2 = ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN +  "%pluginlatestversion%" + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + "%pluginversion%";
+    }
+
     @NotNull
-    private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
+    private TextComponent createLink(@NotNull final String text, @NotNull final String link) {
         final ComponentBuilder lore = new ComponentBuilder("Link: ")
                 .bold(true)
                 .append(link)
                 .bold(false);
         final TextComponent component = new TextComponent(text);
-        component.setBold(true);
-        // TODO: Make color configurable
-        component.setColor(net.md_5.bungee.api.ChatColor.GOLD);
+        component.setBold(linkBold);
+        component.setColor(linkColor);
         component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
         //noinspection deprecation
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, lore.create()));
         return component;
     }
 
-    protected static void printCheckResultToConsole(UpdateCheckEvent event) {
+    protected void printCheckResultToConsole(UpdateCheckEvent event) {
 
         final UpdateChecker instance = UpdateChecker.getInstance();
         final Plugin plugin = instance.getPlugin();
@@ -78,23 +93,23 @@ class Messages {
         printNiceBoxToConsole(plugin.getLogger(), lines);
     }
 
-    protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
+    protected void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
         if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
-            player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
+            player.sendMessage(newVersionMsg1.replaceFirst("%pluginname%",instance.getPlugin().getName()));
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
+            player.sendMessage(newVersionMsg2.replaceFirst("%pluginlatestversion%",instance.getLatestVersion().replaceFirst("%pluginversion%",instance.getUsedVersion())));
             player.sendMessage("");
         } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
-            player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
+            player.sendMessage(cantCheckVersionMsg.replaceFirst("%pluginname%",instance.getPlugin().getName()));
         } else {
             if (showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+                player.sendMessage(latestVersionMsg.replaceFirst("%pluginname%",instance.getPlugin().getName()));
             }
         }
     }
 
-    private static void printNiceBoxToConsole(Logger logger, List<String> lines) {
+    private void printNiceBoxToConsole(Logger logger, List<String> lines) {
         int longestLine = 0;
         for (String line : lines) {
             longestLine = Math.max(line.length(), longestLine);
@@ -112,7 +127,7 @@ class Messages {
         logger.log(Level.WARNING, dash.toString());
     }
 
-    private static void sendLinks(@NotNull final Player... players) {
+    private void sendLinks(@NotNull final Player... players) {
 
         UpdateChecker instance = UpdateChecker.getInstance();
 
@@ -150,5 +165,80 @@ class Messages {
         for (Player player : players) {
             player.spigot().sendMessage(text);
         }
+    }
+
+    /**
+     * Set if links messages should be bold
+     *
+     * @param linkBold links should be bold
+     * @return Messages instance
+     */
+    public Messages setLinkBold(boolean linkBold) {
+        this.linkBold = linkBold;
+        return this;
+    }
+
+    /**
+     * Set the color of links
+     *
+     * @param linkColor links color
+     * @return Messages instance
+     */
+    public Messages setLinkColor(net.md_5.bungee.api.ChatColor linkColor) {
+        this.linkColor = linkColor;
+        return this;
+    }
+
+    /**
+     * Set the message displayed when you are using latest version
+     *
+     * @param latestVersionMsg latest version message (Placeholder "%pluginname%" for plugin name)
+     * @return Messages instance
+     */
+    public Messages setLatestVersionMsg(String latestVersionMsg) {
+        this.latestVersionMsg = latestVersionMsg;
+        return this;
+    }
+
+    /**
+     * Set the message displayed when the plugin can't check update
+     *
+     * @param cantCheckVersionMsg can't check update message (Placeholder "%pluginname%" for plugin name)
+     * @return Messages instance
+     */
+    public Messages setCantCheckVersionMsg(String cantCheckVersionMsg) {
+        this.cantCheckVersionMsg = cantCheckVersionMsg;
+        return this;
+    }
+
+    /**
+     * Set the first line of update available message
+     *
+     * @param newVersionMsg1 first line of update available message (Placeholder "%pluginname%" for plugin name)
+     * @return Messages instance
+     */
+    public Messages setNewVersionMsg1(String newVersionMsg1) {
+        this.newVersionMsg1 = newVersionMsg1;
+        return this;
+    }
+
+    /**
+     * Set the second line of update available message
+     *
+     * @param newVersionMsg2 second line of update available message (Placeholders: "%pluginlatestversion%" for latest version , %pluginversion% for running version)
+     * @return Messages instance
+     */
+    public Messages setNewVersionMsg2(String newVersionMsg2) {
+        this.newVersionMsg2 = newVersionMsg2;
+        return this;
+    }
+
+    /**
+     * Finish editing messages and return UpdateChecker instance
+     *
+     * @return UpdateChecker instance
+     */
+    public UpdateChecker endEditing(){
+        return UpdateChecker.getInstance();
     }
 }

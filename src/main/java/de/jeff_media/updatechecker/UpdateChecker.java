@@ -26,6 +26,7 @@ public class UpdateChecker {
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=";
     private static UpdateChecker instance = null;
+    private final Messages messages;
     private static boolean listenerAlreadyRegistered = false;
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
@@ -57,7 +58,7 @@ public class UpdateChecker {
      * UpdateChecker.getInstance()
      */
     private UpdateChecker() {
-
+        messages = new Messages();
     }
 
     /**
@@ -297,6 +298,15 @@ public class UpdateChecker {
      */
     public String getChangelogLink() {
         return changelogLink;
+    }
+
+    /**
+     * Returns the messages instance
+     *
+     * @return Messages instance
+     */
+    public Messages getMessages() {
+        return messages;
     }
 
     /**
@@ -714,6 +724,8 @@ public class UpdateChecker {
         userAgentString = userAgent;
         return this;
     }
+
+
 
     /**
      * Stops the scheduled update checks. THIS IS NOT NEEDED when calling
