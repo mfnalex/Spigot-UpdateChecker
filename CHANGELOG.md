@@ -1,3 +1,7 @@
+## 1.2.6
+
+Nothing changed.
+
 ## 1.2.4
 
 Changed relocation of dependencies in pom.xml
