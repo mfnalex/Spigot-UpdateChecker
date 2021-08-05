@@ -1,6 +1,5 @@
 package de.jeff_media.updatechecker;
 
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;

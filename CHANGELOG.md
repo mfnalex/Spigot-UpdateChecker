@@ -1,6 +1,6 @@
-## 1.2.6
+## 1.3.0
 
-Nothing changed.
+Reduced file size from 248KB to 33KB by getting rid of the maven-artifact dependency.
 
 ## 1.2.4
 
