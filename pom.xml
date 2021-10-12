@@ -16,6 +16,15 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <description>Powerful update checker for Spigot plugins.</description>
+    <inceptionYear>2021</inceptionYear>
+    <url>https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker</url>
+
+    <organization>
+        <name>JEFF Media GbR</name>
+        <url>https://www.jeff-media.com</url>
+    </organization>
+
     <build>
         <plugins>
             <plugin>
