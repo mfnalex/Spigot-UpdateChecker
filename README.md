@@ -11,6 +11,8 @@ Author: mfnalex
 
 Contributors: MrNemo64
 
+[Related SpigotMC thread](https://www.spigotmc.org/threads/powerful-update-checker-with-only-one-line-of-code.500010/)
+
 ## Features
 
 You can issue manual and repeated update checks and send the result as ingame message to specific players and/or have
@@ -27,6 +29,63 @@ can add links to your donation page and changelog.
 
 You can either provide all those links, including to the API endpoint where the latest version is checked yourself, or
 just provide the SpigotMC Resource ID of your plugin for the Update Checker to get those links automatically.
+
+## Maven
+
+The UpdateChecker is available in my public repository:
+
+```xml
+<repositories>
+    <repository>
+        <id>jeff-media-public</id>
+        <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
+    </repository>
+</repositories>
+<dependencies>
+    <dependency>
+        <groupId>de.jeff_media</groupId>
+        <artifactId>SpigotUpdateChecker</artifactId>
+        <version>1.3.0</version> <!-- Check on GitHub for the latest version -->
+        <scope>compile</scope>
+    </dependency>
+</dependencies>
+```
+
+Please note that you will also have to shade and relocate the UpdateChecker into your .jar file:
+
+```xml
+<build>
+   ...
+    <plugins>
+        ...
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.2.1</version>
+            <configuration>
+                <relocations>
+                    <!-- Using the maven-shade-plugin to shade and relocate the UpdateChecker -->
+                    <!-- Replace "your.package" with your plugin's package name -->
+                    <relocation>
+                        <pattern>de.jeff_media.updatechecker</pattern>
+                        <shadedPattern>your.package.updatechecker</shadedPattern>
+                    </relocation>
+                </relocations>
+            </configuration>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+
+**Failing to relocate the package will make the UpdateChecker throw an exception, so RELOCATE IT!**
 
 ## Example
 
@@ -138,68 +197,19 @@ public class MyPlugin extends JavaPlugin {
 }
 ```
 
-## Maven
-
-The UpdateChecker is available in my public repository:
-
-```xml
-<repositories>
-    <repository>
-        <id>jeff-media-gbr</id>
-        <url>https://repo.jeff-media.de/maven2/</url>
-    </repository>
-</repositories>
-<dependencies>
-    <dependency>
-        <groupId>de.jeff_media</groupId>
-        <artifactId>SpigotUpdateChecker</artifactId>
-        <version>1.2.4</version> <!-- Check on GitHub for the latest version -->
-        <scope>compile</scope>
-    </dependency>
-</dependencies>
-```
-
-Please note that you will also have to shade and relocate the UpdateChecker into your .jar file:
-
-```xml
-<build>
-   ...
-    <plugins>
-        ...
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>3.2.1</version>
-            <configuration>
-                <relocations>
-                    <!-- Using the maven-shade-plugin to shade and relocate the UpdateChecker -->
-                    <!-- Replace "your.package" with your plugin's package name -->
-                    <relocation>
-                        <pattern>de.jeff_media.updatechecker</pattern>
-                        <shadedPattern>your.package.updatechecker</shadedPattern>
-                    </relocation>
-                </relocations>
-            </configuration>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>shade</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
-
-**Failing to relocate the package will make the UpdateChecker throw an exception, so RELOCATE IT!**
-
 ## JavaDocs and Example plugin
 
 JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
 
 Example plugin: https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker-Example
+
+## Other libraries by me
+
+### [CustomBlockData](https://github.com/JEFF-Media-GbR/CustomBlockData)
+My **CustomBlockData** library provides a PersistentDataContainer for every block in your world - easily save EVERY information you like inside blocks, without any external storage needed!
+
+### [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)
+Adds a ton of new **PersistentDataTypes** to use with Bukkit's PersistentDataContainer.
 
 ## Discord
 
