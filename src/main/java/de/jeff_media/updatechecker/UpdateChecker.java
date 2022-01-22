@@ -463,6 +463,16 @@ public class UpdateChecker {
         return usedVersion;
     }
 
+    /**
+     * Sets the version string of the currently used plugin version.
+     * By default this is the version defined in the plugin.yml file.
+     *
+     * @return Version string of the currently used plugin version
+     */
+    public void setUsedVersion(String usedVersion) {
+        this.usedVersion = usedVersion;
+    }
+
     public boolean isCheckedAtLeastOnce() {
         return checkedAtLeastOnce;
     }
