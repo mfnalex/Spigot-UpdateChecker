@@ -129,7 +129,7 @@ public class UpdateChecker {
     }
 
     /**
-     * Returns whether the message "You are using the latest version of {@literal <PluginName>}" will be suppressed.
+     * Returns whether the message "You are using the latest version of <PluginName>" will be suppressed.
      *
      * @return True when the message will be suppressed, otherwise false
      */
@@ -611,10 +611,10 @@ public class UpdateChecker {
     }
 
     /**
-     * Sets whether the message "You are using the latest version of {@literal <PluginName>}" should be suppressed.
+     * Sets whether the message "You are using the latest version of <PluginName>" should be suppressed.
      * Defaults to false
      *
-     * @param suppress Whether to suppress the message "You are using the latest version of {@literal <PluginName>}"
+     * @param suppress Whether to suppress the message "You are using the latest version of <PluginName>"
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker suppressUpToDateMessage(boolean suppress) {
