@@ -45,7 +45,7 @@ The UpdateChecker is available in my public repository:
     <dependency>
         <groupId>de.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>1.3.0</version> <!-- Check on GitHub for the latest version -->
+        <version>1.3.2</version> <!-- Check on GitHub for the latest version -->
         <scope>compile</scope>
     </dependency>
 </dependencies>

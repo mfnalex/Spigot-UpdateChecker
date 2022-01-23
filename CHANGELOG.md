@@ -1,3 +1,11 @@
+## 1.3.2
+
+Attached javadocs and sources
+
+## 1.3.1
+
+Added UpdateChecker#setUsedVersion(String)
+
 ## 1.3.0
 
 Reduced file size from 248KB to 33KB by getting rid of the maven-artifact dependency.
