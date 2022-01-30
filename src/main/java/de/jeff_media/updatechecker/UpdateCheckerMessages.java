@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-class Messages {
+class UpdateCheckerMessages {
 
     @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {

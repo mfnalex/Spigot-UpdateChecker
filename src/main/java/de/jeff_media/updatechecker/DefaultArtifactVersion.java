@@ -4,8 +4,7 @@ import org.apache.commons.lang.math.NumberUtils;
 
 import java.util.*;
 
-public class DefaultArtifactVersion implements ArtifactVersion
-{
+public class DefaultArtifactVersion implements ArtifactVersion {
     private Integer majorVersion;
     private Integer minorVersion;
     private Integer incrementalVersion;
@@ -35,32 +34,6 @@ public class DefaultArtifactVersion implements ArtifactVersion
         return this.compareTo((ArtifactVersion)new DefaultArtifactVersion(otherVersion.toString()));
     }
 
-    @Override
-    public int getMajorVersion() {
-        return (this.majorVersion != null) ? this.majorVersion : 0;
-    }
-
-    @Override
-    public int getMinorVersion() {
-        return (this.minorVersion != null) ? this.minorVersion : 0;
-    }
-
-    @Override
-    public int getIncrementalVersion() {
-        return (this.incrementalVersion != null) ? this.incrementalVersion : 0;
-    }
-
-    @Override
-    public int getBuildNumber() {
-        return (this.buildNumber != null) ? this.buildNumber : 0;
-    }
-
-    @Override
-    public String getQualifier() {
-        return this.qualifier;
-    }
-
-    @Override
     public final void parseVersion(final String version) {
         this.comparable = new ComparableVersion(version);
         final int index = version.indexOf(45);

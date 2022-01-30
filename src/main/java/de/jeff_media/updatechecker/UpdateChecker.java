@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -16,26 +17,31 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
- * Automatically checks for updates
+ * <b>Main class. Automatically checks for updates.</b>
  */
+@SuppressWarnings("UnusedReturnValue")
 public class UpdateChecker {
 
-    protected static final String VERSION = "1.0.0";
+    protected static final String VERSION = "1.4.0-SNAPSHOT";
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
-    private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=";
+    private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
+    private static final String SPIGET_UPDATE_API = "https://api.spiget.org/v2/resources/%s/versions/latest";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
-    private String apiLink = null;
+    private final String spigotResourceId = "%%__RESOURCE__%%";
+    private final String spigotNonce = "%%__NONCE__%%";
+    private final String apiLink;
+    private final Plugin plugin;
+    private final ThrowingFunction<BufferedReader, String, IOException> mapper;
     private String changelogLink = null;
     private boolean checkedAtLeastOnce = false;
     private boolean coloredConsoleOutput = false;
     private String donationLink = null;
     private String freeDownloadLink = null;
     private String latestVersion = null;
-    private Plugin main = null;
     private String nameFreeVersion = "Free";
     private String namePaidVersion = "Paid";
     private boolean notifyOpsOnJoin = true;
@@ -48,15 +54,37 @@ public class UpdateChecker {
     private String paidDownloadLink = null;
     private int taskId = -1;
     private int timeout = 0;
-    private String usedVersion = null;
+    private String usedVersion;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
-    /**
-     * Use UpdateChecker.init() instead. You can later get the instance by using
-     * UpdateChecker.getInstance()
-     */
-    private UpdateChecker() {
 
+    private UpdateChecker(@NotNull Plugin plugin, @NotNull String apiLink, ThrowingFunction<BufferedReader, String, IOException> mapper) {
+        instance = this;
+        Objects.requireNonNull(plugin, "Plugin cannot be null.");
+        Objects.requireNonNull(apiLink, "API Link cannot be null.");
+
+        this.plugin = plugin;
+        this.usedVersion = plugin.getDescription().getVersion().trim();
+        this.apiLink = apiLink;
+        this.mapper = mapper;
+
+        if (detectPaidVersion()) {
+            usingPaidVersion = true;
+        }
+
+        if (!listenerAlreadyRegistered) {
+            Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
+            listenerAlreadyRegistered = true;
+        }
+    }
+
+    /**
+     * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
+     *
+     * @return true if the Spigot User ID placeholder has been properly replaced by a numeric string
+     */
+    private boolean detectPaidVersion() {
+        return spigotUserId.matches("^[0-9]+$");
     }
 
     /**
@@ -65,10 +93,20 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public static UpdateChecker getInstance() {
-        if (instance == null) {
-            instance = new UpdateChecker();
-        }
         return instance;
+    }
+
+    public static UpdateChecker init(@NotNull Plugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
+        switch (updateCheckSource) {
+            case CUSTOM_URL:
+                return new UpdateChecker(plugin, parameter, VersionMapper.TRIM_FIRST_LINE);
+            case SPIGOT:
+                return new UpdateChecker(plugin, String.format(SPIGOT_UPDATE_API, parameter), VersionMapper.TRIM_FIRST_LINE);
+            case SPIGET:
+                return new UpdateChecker(plugin, String.format(SPIGET_UPDATE_API, parameter), VersionMapper.SPIGET);
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -79,10 +117,11 @@ public class UpdateChecker {
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String
      *                         from the SpigotMC Web API
      * @return UpdateChecker instance being ran
+     * @deprecated Use {@link #init(Plugin, UpdateCheckSource, String)} instead.
      */
-
+    @Deprecated
     public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
-        return init(plugin, SPIGOT_UPDATE_API + spigotResourceId);
+        return new UpdateChecker(plugin, String.format(SPIGOT_UPDATE_API, spigotResourceId), VersionMapper.TRIM_FIRST_LINE);
     }
 
     /**
@@ -93,39 +132,11 @@ public class UpdateChecker {
      * @param apiLink HTTP(S) link to a file containing a string with the latest
      *                version of your plugin.
      * @return UpdateChecker instance being ran
+     * @deprecated Use {@link #init(Plugin, UpdateCheckSource, String)} instead.
      */
+    @Deprecated
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
-        Objects.requireNonNull(plugin, "Plugin cannot be null.");
-        Objects.requireNonNull(apiLink, "API Link cannot be null.");
-
-        UpdateChecker instance = getInstance();
-
-        instance.main = plugin;
-        instance.usedVersion = plugin.getDescription().getVersion().trim();
-        instance.apiLink = apiLink;
-
-        if (instance.detectPaidVersion())
-            instance.usingPaidVersion = true;
-
-        if (!listenerAlreadyRegistered) {
-            Bukkit.getPluginManager().registerEvents(new InternalUpdateCheckListener(), plugin);
-            listenerAlreadyRegistered = true;
-        }
-
-        return instance;
-    }
-
-    /**
-     * Checks whether one version is really newer than another according to the semantic versioning scheme, including letters.
-     *
-     * @param myVersion    One version string
-     * @param otherVersion Another version string
-     * @return true if the other version is indeed newer, otherwise false
-     */
-    public static boolean isOtherVersionNewer(String myVersion, String otherVersion) {
-        DefaultArtifactVersion used = new DefaultArtifactVersion(myVersion);
-        DefaultArtifactVersion latest = new DefaultArtifactVersion(otherVersion);
-        return used.compareTo(latest) < 0;
+        return new UpdateChecker(plugin, apiLink, VersionMapper.TRIM_FIRST_LINE);
     }
 
     /**
@@ -150,10 +161,10 @@ public class UpdateChecker {
     public UpdateChecker checkEveryXHours(double hours) {
         double minutes = hours * 60;
         double seconds = minutes * 60;
-        long ticks = ((int) seconds) * 20;
+        long ticks = ((int) seconds) * 20L;
         stop();
         if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(main, () -> checkNow(Bukkit.getConsoleSender()), ticks,
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> checkNow(Bukkit.getConsoleSender()), ticks,
                     ticks);
         } else {
             taskId = -1;
@@ -162,11 +173,15 @@ public class UpdateChecker {
     }
 
     /**
-     * Checks for updates now and sends the result to the console when
-     * notifyRequesters is set to true (default)
+     * Stops the scheduled update checks. THIS IS NOT NEEDED when calling
+     * checkEveryXHours(double) again, as the UpdateChecker will automatically stop
+     * its previous task.
      */
-    public UpdateChecker checkNow() {
-        checkNow(Bukkit.getConsoleSender());
+    public UpdateChecker stop() {
+        if (taskId != -1) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+        taskId = -1;
         return this;
     }
 
@@ -177,7 +192,7 @@ public class UpdateChecker {
      * @param requesters CommandSenders to send the result to, or null
      */
     public UpdateChecker checkNow(@Nullable CommandSender... requesters) {
-        if (main == null) {
+        if (plugin == null) {
             throw new IllegalStateException("Plugin has not been set.");
         }
         if (apiLink == null) {
@@ -190,7 +205,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -200,24 +215,26 @@ public class UpdateChecker {
                 if (timeout > 0) {
                     httpConnection.setConnectTimeout(timeout);
                 }
-                final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
-                final BufferedReader reader = new BufferedReader(input);
-                latestVersion = reader.readLine().trim();
-                reader.close();
+                try (
+                        final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
+                        final BufferedReader reader = new BufferedReader(input)
+                ) {
+                    latestVersion = mapper.apply(reader);
+                }
 
                 if (!isUsingLatestVersion() && !isOtherVersionNewer(usedVersion, latestVersion)) {
                     latestVersion = usedVersion;
                 }
 
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
-            } catch (final Exception e) {
+            } catch (final IOException exception) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                Bukkit.getScheduler().runTask(main, () -> getOnFail().accept(requesters, e));
+                Bukkit.getScheduler().runTask(plugin, () -> getOnFail().accept(requesters, exception));
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
 
-            Bukkit.getScheduler().runTask(main, () -> {
+            Bukkit.getScheduler().runTask(plugin, () -> {
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
                     getOnSuccess().accept(requesters, latestVersion);
@@ -231,23 +248,67 @@ public class UpdateChecker {
     }
 
     /**
-     * Checks that the class was properly relocated. Proudly stolen from bStats.org
+     * Checks whether the latest found version of the plugin is being used.
+     *
+     * @return true if the latest found version is the one currently in use, otherwise false
      */
-    private void checkRelocation() {
-        final String defaultPackage = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
-        final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
-        if (this.getClass().getPackage().getName().startsWith(defaultPackage) || this.getClass().getPackage().getName().startsWith(examplePackage)) {
-            throw new IllegalStateException("UpdateChecker class has not been relocated correctly!");
-        }
+    public boolean isUsingLatestVersion() {
+        return usedVersion.equals(instance.latestVersion);
     }
 
     /**
-     * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
+     * Checks whether one version is really newer than another according to the semantic versioning scheme, including letters.
      *
-     * @return true if the Spigot User ID placeholder has been properly replaced by a numeric string
+     * @param myVersion    One version string
+     * @param otherVersion Another version string
+     * @return true if the other version is indeed newer, otherwise false
      */
-    private boolean detectPaidVersion() {
-        return spigotUserId.matches("^[0-9]+$");
+    public static boolean isOtherVersionNewer(String myVersion, String otherVersion) {
+        DefaultArtifactVersion used = new DefaultArtifactVersion(myVersion);
+        DefaultArtifactVersion latest = new DefaultArtifactVersion(otherVersion);
+        return used.compareTo(latest) < 0;
+    }
+
+    /**
+     * Gets the task that will run when/after the update check fails.
+     *
+     * @return Task that will run when/after the update check fails.
+     */
+    public BiConsumer<CommandSender[], Exception> getOnFail() {
+        return onFail;
+    }
+
+    /**
+     * Gets the task that will run when/after the update check succeeds.
+     *
+     * @return Task that will run when/after the update check succeeds.
+     */
+    public BiConsumer<CommandSender[], String> getOnSuccess() {
+        return onSuccess;
+    }
+
+    /**
+     * Checks for updates now and sends the result to the console when
+     * notifyRequesters is set to true (default)
+     */
+    public UpdateChecker checkNow() {
+        checkNow(Bukkit.getConsoleSender());
+        return this;
+    }
+
+    /**
+     * Checks that the class was properly relocated. Proudly stolen from bStats.org
+     */
+    private void checkRelocation() {
+        final String defaultPackageDe = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String defaultPackageCom = new String(new byte[]{'c', 'o', 'm', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
+        String packageName = UpdateChecker.class.getPackage().getName();
+        if (packageName.startsWith(defaultPackageDe)
+                || packageName.startsWith(defaultPackageCom)
+                || packageName.startsWith(examplePackage)) {
+            throw new IllegalStateException("SpigotUpdateChecker class has not been relocated correctly!");
+        }
     }
 
     /**
@@ -419,30 +480,12 @@ public class UpdateChecker {
     }
 
     /**
-     * Gets the task that will run when/after the update check fails.
-     *
-     * @return Task that will run when/after the update check fails.
-     */
-    public BiConsumer<CommandSender[], Exception> getOnFail() {
-        return onFail;
-    }
-
-    /**
-     * Gets the task that will run when/after the update check succeeds.
-     *
-     * @return Task that will run when/after the update check succeeds.
-     */
-    public BiConsumer<CommandSender[], String> getOnSuccess() {
-        return onSuccess;
-    }
-
-    /**
      * Gets the plugin that instantiated this UpdateChecker instance
      *
      * @return Plugin that instantiated this UpdateChecker instance
      */
     protected Plugin getPlugin() {
-        return main;
+        return plugin;
     }
 
     /**
@@ -466,12 +509,20 @@ public class UpdateChecker {
     /**
      * Sets the version string of the currently used plugin version.
      * By default, this is the version defined in the plugin.yml file.
+     *
+     * @param usedVersion new version string
      */
     public UpdateChecker setUsedVersion(String usedVersion) {
         this.usedVersion = usedVersion;
         return this;
     }
 
+    /**
+     * Checks whether the update checker already ran.
+     *
+     * @return True when the update checker already ran, otherwise false
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isCheckedAtLeastOnce() {
         return checkedAtLeastOnce;
     }
@@ -535,15 +586,6 @@ public class UpdateChecker {
     public UpdateChecker setNotifyRequesters(boolean notify) {
         notifyRequesters = notify;
         return this;
-    }
-
-    /**
-     * Checks whether the latest found version of the plugin is being used.
-     *
-     * @return true if the latest found version is the one currently in use, otherwise false
-     */
-    public boolean isUsingLatestVersion() {
-        return usedVersion.equals(instance.latestVersion);
     }
 
     /**
@@ -720,19 +762,6 @@ public class UpdateChecker {
      */
     public UpdateChecker setUserAgent(@Nullable String userAgent) {
         userAgentString = userAgent;
-        return this;
-    }
-
-    /**
-     * Stops the scheduled update checks. THIS IS NOT NEEDED when calling
-     * checkEveryXHours(double) again, as the UpdateChecker will automatically stop
-     * its previous task.
-     */
-    public UpdateChecker stop() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
-        }
-        taskId = -1;
         return this;
     }
 

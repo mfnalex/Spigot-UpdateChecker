@@ -6,11 +6,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-class InternalUpdateCheckListener implements Listener {
+class UpdateCheckListener implements Listener {
 
     private final UpdateChecker instance;
 
-    InternalUpdateCheckListener() {
+    UpdateCheckListener() {
         instance = UpdateChecker.getInstance();
     }
 
@@ -19,7 +19,7 @@ class InternalUpdateCheckListener implements Listener {
         if (!instance.isCheckedAtLeastOnce()) return;
         Player player = playerJoinEvent.getPlayer();
         if ((player.isOp() && instance.isNotifyOpsOnJoin()) || (instance.getNotifyPermission() != null && player.hasPermission(instance.getNotifyPermission()))) {
-            Messages.printCheckResultToPlayer(player, false);
+            UpdateCheckerMessages.printCheckResultToPlayer(player, false);
         }
     }
 
@@ -30,9 +30,9 @@ class InternalUpdateCheckListener implements Listener {
         if (event.getRequesters() == null) return;
         for (CommandSender commandSender : event.getRequesters()) {
             if (commandSender instanceof Player) {
-                Messages.printCheckResultToPlayer((Player) commandSender, true);
+                UpdateCheckerMessages.printCheckResultToPlayer((Player) commandSender, true);
             } else {
-                Messages.printCheckResultToConsole(event);
+                UpdateCheckerMessages.printCheckResultToConsole(event);
             }
 
         }
