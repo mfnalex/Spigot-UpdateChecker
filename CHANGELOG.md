@@ -1,6 +1,7 @@
 ## 2.0.0
 - Added support for Spiget
 - Switched from static init() methods and static getInstance() method to a regular constructor. Since more than one UpdateChecker instances can exist at the same time, you are expected to keep track of the instance(s) you created yourself.
+- Changed Maven GroupID to com.jeff_media and Java Package name to com.jeff_media.updatechecker
 
 This is how to create a new UpdateChecker as of 2.0.0 now:
 ```java
