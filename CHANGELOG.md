@@ -1,3 +1,19 @@
+## 2.0.0
+- Added support for Spiget
+- Switched from static init() methods and static getInstance() method to a regular constructor. Since more than one UpdateChecker instances can exist at the same time, you are expected to keep track of the instance(s) you created yourself.
+
+This is how to create a new UpdateChecker as of 2.0.0 now:
+```java
+// Get version information from SpigotMC.org ("12345" is your SpigotMC resource ID):
+UpdateChecker updateChecker = new UpdateChecker(myPlugin, UpdateCheckSource.SPIGOT, "12345");
+
+// Get version information from Spiget.org ("12345" is your SpigotMC resource ID):
+UpdateChecker updateChecker = new UpdateChecker(myPlugin, UpdateCheckSource.SPIGET, "12345");
+
+// Get version information from an HTTP(S) URL:
+UpdateChecker updateChecker = new UpdateChecker(myPlugin, UpdateCheckSource.SPIGOT, "https://api.jeff-media.com/chestsort/latest-version.txt");
+```
+
 ## 1.3.2
 
 Attached javadocs and sources

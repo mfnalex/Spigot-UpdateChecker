@@ -43,9 +43,9 @@ The UpdateChecker is available in my public repository:
 </repositories>
 <dependencies>
     <dependency>
-        <groupId>de.jeff_media</groupId>
+        <groupId>com.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>1.3.2</version> <!-- Check on GitHub for the latest version -->
+        <version>2.0.0</version> <!-- Check on GitHub for the latest version -->
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -67,7 +67,7 @@ Please note that you will also have to shade and relocate the UpdateChecker into
                     <!-- Using the maven-shade-plugin to shade and relocate the UpdateChecker -->
                     <!-- Replace "your.package" with your plugin's package name -->
                     <relocation>
-                        <pattern>de.jeff_media.updatechecker</pattern>
+                        <pattern>com.jeff_media.updatechecker</pattern>
                         <shadedPattern>your.package.updatechecker</shadedPattern>
                     </relocation>
                 </relocations>
@@ -98,7 +98,7 @@ public class MyPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        UpdateChecker.init(this, SPIGOT_RESOURCE_ID)
+        new UpdateChecker(this, UpdateCheckSource.SPIGOT, SPIGOT_RESOURCE_ID) // You can also use Spiget instead of Spigot - Spiget's API is usually much faster up to date.
                 .checkEveryXHours(24) // Check every 24 hours
                 .checkNow(); // And check right now
     }
@@ -111,12 +111,14 @@ joining the server. If no new version is found, no message will be sent.
 Of course, there are many more options you can use. For example:
 
 ```java
+import com.jeff_media.updatechecker.UpdateCheckSource;
+
 public class MyPlugin extends JavaPlugin {
     private static final int SPIGOT_RESOURCE_ID = 59773;
 
     @Override
     public void onEnable() {
-        UpdateChecker.init(this, "https://api.jeff-media.de/chestsort/latest-version.txt") // A link to a URL that contains the latest version as String
+        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://api.jeff-media.de/chestsort/latest-version.txt") // A link to a URL that contains the latest version as String
                 .setDownloadLink("https://www.chestsort.de") // You can either use a custom URL or the Spigot Resource ID
                 .setDonationLink("https://paypal.me/mfnalex")
                 .setChangelogLink(SPIGOT_RESOURCE_ID) // Same as for the Download link: URL or Spigot Resource ID
@@ -144,6 +146,8 @@ to detect whether a server is using the paid version, but you can also override 
 To achieve this, you can just do this:
 
 ```java
+import com.jeff_media.updatechecker.UpdateCheckSource;
+
 public class MyPlugin extends JavaPlugin {
     private static final int ANGELCHEST_FREE = 60383;
     private static final int ANGELCHEST_PLUS = 88214;
@@ -151,7 +155,7 @@ public class MyPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
+        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://api.jeff-media.de/angelchest/latest-version.txt")
                 .setFreeDownloadLink(ANGELCHEST_FREE)
                 .setPaidDownloadLink(ANGELCHEST_PLUS)
                 .setNameFreeVersion("Free") // Optional. It's the suffix for the download links
@@ -175,11 +179,13 @@ top.
 You can use Consumers to change the behaviour of the Update Checker.
 
 ```java
+import com.jeff_media.updatechecker.UpdateCheckSource;
+
 public class MyPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        UpdateChecker.init(this, "https://api.jeff-media.de/angelchest/latest-version.txt")
+        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://api.jeff-media.de/angelchest/latest-version.txt")
                 .setDownloadLink("https://www.chestsort.de")
                 .onSuccess((commandSenders, latestVersion) -> {
                     for (CommandSender sender : commandSenders) {

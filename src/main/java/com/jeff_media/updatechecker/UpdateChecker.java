@@ -1,4 +1,22 @@
-package de.jeff_media.updatechecker;
+/*
+ * Copyright (c) 2022 Alexander Majka (mfnalex), JEFF Media GbR
+ * Website: https://www.jeff-media.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.jeff_media.updatechecker;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -17,12 +35,12 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
- * <b>Main class. Automatically checks for updates.</b>
+ * <b>Main class.</b> Automatically checks for updates.</b>
  */
 @SuppressWarnings("UnusedReturnValue")
 public class UpdateChecker {
 
-    protected static final String VERSION = "1.4.0-SNAPSHOT";
+    static final String VERSION = "1.4.0-SNAPSHOT";
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
@@ -31,8 +49,8 @@ public class UpdateChecker {
     private static boolean listenerAlreadyRegistered = false;
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
-    private final String spigotResourceId = "%%__RESOURCE__%%";
-    private final String spigotNonce = "%%__NONCE__%%";
+    //private final String spigotResourceId = "%%__RESOURCE__%%";
+    //private final String spigotNonce = "%%__NONCE__%%";
     private final String apiLink;
     private final Plugin plugin;
     private final ThrowingFunction<BufferedReader, String, IOException> mapper;
@@ -58,7 +76,55 @@ public class UpdateChecker {
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
 
-    private UpdateChecker(@NotNull Plugin plugin, @NotNull String apiLink, ThrowingFunction<BufferedReader, String, IOException> mapper) {
+    /**
+     * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
+     *
+     * @return true if the Spigot User ID placeholder has been properly replaced by a numeric string
+     */
+    private boolean detectPaidVersion() {
+        return spigotUserId.matches("^[0-9]+$");
+    }
+
+    /**
+     * Gets the current UpdateChecker singleton if it has been created, otherwise null.
+     *
+     * @return UpdateChecker instance being ran, or null if {@link #UpdateChecker(Plugin, UpdateCheckSource, String)} wasn't called yet.
+     * @deprecated As of SpigotUpdateChecker 1.4.0, more than one instance can exist at the same time. Keep track of the instances you created yourself.
+     */
+    @Deprecated
+    public static UpdateChecker getInstance() {
+        return instance;
+    }
+
+    /**
+     * Initializes the UpdateChecker instance. HAS to be called before the UpdateChecker can run.
+     * @param plugin            Main class of your plugin
+     * @param updateCheckSource Source where to check for updates
+     * @param parameter         Parameter for the update checker source. See {@link UpdateCheckSource} for more informatino
+     * @return New UpdateChecker instance
+     */
+    public UpdateChecker(@NotNull Plugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
+
+        final String apiLink;
+        final ThrowingFunction<BufferedReader,String,IOException> mapper;
+
+        switch (updateCheckSource) {
+            case CUSTOM_URL:
+                apiLink = parameter;
+                mapper = VersionMapper.TRIM_FIRST_LINE;
+                break;
+            case SPIGOT:
+                apiLink = String.format(SPIGOT_UPDATE_API, parameter);
+                mapper = VersionMapper.TRIM_FIRST_LINE;
+                break;
+            case SPIGET:
+                apiLink = String.format(SPIGET_UPDATE_API, parameter);
+                mapper = VersionMapper.SPIGET;
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+
         instance = this;
         Objects.requireNonNull(plugin, "Plugin cannot be null.");
         Objects.requireNonNull(apiLink, "API Link cannot be null.");
@@ -79,37 +145,6 @@ public class UpdateChecker {
     }
 
     /**
-     * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
-     *
-     * @return true if the Spigot User ID placeholder has been properly replaced by a numeric string
-     */
-    private boolean detectPaidVersion() {
-        return spigotUserId.matches("^[0-9]+$");
-    }
-
-    /**
-     * Gets the current UpdateChecker singleton
-     *
-     * @return UpdateChecker instance being ran
-     */
-    public static UpdateChecker getInstance() {
-        return instance;
-    }
-
-    public static UpdateChecker init(@NotNull Plugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
-        switch (updateCheckSource) {
-            case CUSTOM_URL:
-                return new UpdateChecker(plugin, parameter, VersionMapper.TRIM_FIRST_LINE);
-            case SPIGOT:
-                return new UpdateChecker(plugin, String.format(SPIGOT_UPDATE_API, parameter), VersionMapper.TRIM_FIRST_LINE);
-            case SPIGET:
-                return new UpdateChecker(plugin, String.format(SPIGET_UPDATE_API, parameter), VersionMapper.SPIGET);
-            default:
-                throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
      * Initializes the UpdateChecker instance. HAS to be called before the
      * UpdateChecker can run.
      *
@@ -117,11 +152,11 @@ public class UpdateChecker {
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String
      *                         from the SpigotMC Web API
      * @return UpdateChecker instance being ran
-     * @deprecated Use {@link #init(Plugin, UpdateCheckSource, String)} instead.
+     * @deprecated Use {@link #UpdateChecker(Plugin, UpdateCheckSource, String)}  instead.
      */
     @Deprecated
     public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
-        return new UpdateChecker(plugin, String.format(SPIGOT_UPDATE_API, spigotResourceId), VersionMapper.TRIM_FIRST_LINE);
+        return new UpdateChecker(plugin, UpdateCheckSource.SPIGOT,String.valueOf(spigotResourceId));
     }
 
     /**
@@ -132,11 +167,11 @@ public class UpdateChecker {
      * @param apiLink HTTP(S) link to a file containing a string with the latest
      *                version of your plugin.
      * @return UpdateChecker instance being ran
-     * @deprecated Use {@link #init(Plugin, UpdateCheckSource, String)} instead.
+     * @deprecated Use {@link #UpdateChecker(Plugin, UpdateCheckSource, String)} instead.
      */
     @Deprecated
     public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
-        return new UpdateChecker(plugin, apiLink, VersionMapper.TRIM_FIRST_LINE);
+        return new UpdateChecker(plugin, UpdateCheckSource.CUSTOM_URL, apiLink);
     }
 
     /**
