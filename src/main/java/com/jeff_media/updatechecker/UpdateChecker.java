@@ -21,6 +21,7 @@ package com.jeff_media.updatechecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,7 @@ public class UpdateChecker {
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
     private static final String SPIGET_UPDATE_API = "https://api.spiget.org/v2/resources/%s/versions/latest";
+    private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
     @SuppressWarnings("CanBeFinal")
@@ -88,7 +90,7 @@ public class UpdateChecker {
     /**
      * Gets the current UpdateChecker singleton if it has been created, otherwise null.
      *
-     * @return UpdateChecker instance being ran, or null if {@link #UpdateChecker(Plugin, UpdateCheckSource, String)} wasn't called yet.
+     * @return UpdateChecker instance being ran, or null if {@link #UpdateChecker(JavaPlugin, UpdateCheckSource, String)} wasn't called yet.
      * @deprecated As of SpigotUpdateChecker 1.4.0, more than one instance can exist at the same time. Keep track of the instances you created yourself.
      */
     @Deprecated
@@ -103,7 +105,7 @@ public class UpdateChecker {
      * @param parameter         Parameter for the update checker source. See {@link UpdateCheckSource} for more informatino
      * @return New UpdateChecker instance
      */
-    public UpdateChecker(@NotNull Plugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
+    public UpdateChecker(@NotNull JavaPlugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
 
         final String apiLink;
         final ThrowingFunction<BufferedReader,String,IOException> mapper;
@@ -120,6 +122,14 @@ public class UpdateChecker {
             case SPIGET:
                 apiLink = String.format(SPIGET_UPDATE_API, parameter);
                 mapper = VersionMapper.SPIGET;
+                break;
+            case GITHUB_RELEASE_TAG:
+                String[] split = parameter.split("/");
+                if(split.length<2) {
+                    throw new IllegalArgumentException("Given GitHub repository must be in the format \"<UserOrOrganizationName>/<RepositoryName>\"");
+                }
+                apiLink = String.format(GITHUB_RELEASE_API,split[0],split[1]);
+                mapper = VersionMapper.GITHUB_RELEASE_TAG;
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -152,10 +162,10 @@ public class UpdateChecker {
      * @param spigotResourceId SpigotMC Resource ID to get the latest version String
      *                         from the SpigotMC Web API
      * @return UpdateChecker instance being ran
-     * @deprecated Use {@link #UpdateChecker(Plugin, UpdateCheckSource, String)}  instead.
+     * @deprecated Use {@link #UpdateChecker(JavaPlugin, UpdateCheckSource, String)}  instead.
      */
     @Deprecated
-    public static UpdateChecker init(@NotNull Plugin plugin, int spigotResourceId) {
+    public static UpdateChecker init(@NotNull JavaPlugin plugin, int spigotResourceId) {
         return new UpdateChecker(plugin, UpdateCheckSource.SPIGOT,String.valueOf(spigotResourceId));
     }
 
@@ -167,10 +177,10 @@ public class UpdateChecker {
      * @param apiLink HTTP(S) link to a file containing a string with the latest
      *                version of your plugin.
      * @return UpdateChecker instance being ran
-     * @deprecated Use {@link #UpdateChecker(Plugin, UpdateCheckSource, String)} instead.
+     * @deprecated Use {@link #UpdateChecker(JavaPlugin, UpdateCheckSource, String)} instead.
      */
     @Deprecated
-    public static UpdateChecker init(@NotNull Plugin plugin, @NotNull String apiLink) {
+    public static UpdateChecker init(@NotNull JavaPlugin plugin, @NotNull String apiLink) {
         return new UpdateChecker(plugin, UpdateCheckSource.CUSTOM_URL, apiLink);
     }
 

@@ -1,3 +1,13 @@
+## 2.1.0
+
+Added support for GitHub Release tags.
+
+Example:
+
+```java
+UpdateChecker updateChecker = new UpdateChecker(myPugin, UpdateCheckSource.GITHUB_RELEASE_TAG, "JEFF-Media-GbR/ChestSort");
+```
+
 ## 2.0.0
 - Added support for Spiget
 - Switched from static init() methods and static getInstance() method to a regular constructor. Since more than one UpdateChecker instances can exist at the same time, you are expected to keep track of the instance(s) you created yourself.
