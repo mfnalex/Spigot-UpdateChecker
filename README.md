@@ -30,6 +30,13 @@ can add links to your donation page and changelog.
 You can either provide all those links, including to the API endpoint where the latest version is checked yourself, or
 just provide the SpigotMC Resource ID of your plugin for the Update Checker to get those links automatically.
 
+**Supported API endpoints** to retrieve version information:
+
+- SpigotMC API
+- Spiget API
+- GitHub Release Tags
+- Your own custom URL pointing to a text file
+
 ## Maven
 
 The UpdateChecker is available in my public repository:
