@@ -52,7 +52,7 @@ The UpdateChecker is available in my public repository:
     <dependency>
         <groupId>com.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>2.1.0</version> <!-- Check on GitHub for the latest version -->
+        <version>2.1.1</version> <!-- Check on GitHub for the latest version -->
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -209,6 +209,15 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 ```
+
+## Building & Obfuscation
+
+The .jar published in my public repository has been run through allatori to decrease the file size by about 30%.
+It does not affect performance in any negative way.
+The used obfuscation settings are allowed on SpigotMC for both free and paid plugins.
+
+**If you like to build it yourself**, just comment out the maven-exec-plugin part in your pom.xml
+(currently lines 167 to 192).
 
 ## JavaDocs and Example plugin
 

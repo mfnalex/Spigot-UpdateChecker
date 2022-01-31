@@ -41,7 +41,11 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("UnusedReturnValue")
 public class UpdateChecker {
 
-    static final String VERSION = "2.1.0";
+    static {
+        checkRelocation();
+    }
+
+    static final String VERSION = "2.1.1";
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
@@ -51,8 +55,6 @@ public class UpdateChecker {
     private static boolean listenerAlreadyRegistered = false;
     @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
-    //private final String spigotResourceId = "%%__RESOURCE__%%";
-    //private final String spigotNonce = "%%__NONCE__%%";
     private final String apiLink;
     private final Plugin plugin;
     private final ThrowingFunction<BufferedReader, String, IOException> mapper;
@@ -103,7 +105,6 @@ public class UpdateChecker {
      * @param plugin            Main class of your plugin
      * @param updateCheckSource Source where to check for updates
      * @param parameter         Parameter for the update checker source. See {@link UpdateCheckSource} for more informatino
-     * @return New UpdateChecker instance
      */
     public UpdateChecker(@NotNull JavaPlugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
 
@@ -344,7 +345,7 @@ public class UpdateChecker {
     /**
      * Checks that the class was properly relocated. Proudly stolen from bStats.org
      */
-    private void checkRelocation() {
+    private static void checkRelocation() {
         final String defaultPackageDe = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
         final String defaultPackageCom = new String(new byte[]{'c', 'o', 'm', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
         final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
@@ -352,7 +353,7 @@ public class UpdateChecker {
         if (packageName.startsWith(defaultPackageDe)
                 || packageName.startsWith(defaultPackageCom)
                 || packageName.startsWith(examplePackage)) {
-            throw new IllegalStateException("SpigotUpdateChecker class has not been relocated correctly!");
+            throw new IllegalStateException("SpigotUpdateChecker class has not been relocated correctly! Check the GitHub's README.md for instructions.");
         }
     }
 

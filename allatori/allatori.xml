@@ -1,0 +1,46 @@
+<!--
+  ~ Copyright (c) 2022 Alexander Majka (mfnalex), JEFF Media GbR
+  ~ Website: https://www.jeff-media.com
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+<config>
+    <input>
+        <jar in="${project.artifactId}.jar" out="${project.artifactId}.jar"/>
+    </input>
+
+    <classpath>
+        <jar name="C:\Users\mfnal\.m2\repository\org\spigotmc\spigot\1.17.1-R0.1-SNAPSHOT\spigot-1.17.1-R0.1-SNAPSHOT.jar" />
+    </classpath>
+
+    <keep-names>
+        <class access="public"/>
+        <method access="public"/>
+        <field access="public"/>
+    </keep-names>
+
+    <property name="log-file" value="allatori.xml"/>
+    <property name="string-encryption" value="disable" />
+    <property name="local-variables-naming" value="keep-parameters"/>
+    <property name="control-flow-obfuscation" value="enable"/>
+    <property name="extensive-flow-obfuscation" value="disable"/>
+    <property name="line-numbers" value="remove"/>
+    <property name="generics" value="remove"/>
+    <property name="inner-classes" value="remove"/>
+    <property name="member-reorder" value="disable"/>
+    <property name="finalize" value="enable"/>
+    <property name="output-jar-compression-level" value="9"/>
+
+
+</config>
