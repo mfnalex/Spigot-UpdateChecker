@@ -413,14 +413,17 @@ public class UpdateChecker {
     }
 
     /**
-     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC
+     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC/Polymart
      * Resource ID
      *
-     * @param spigotResourceId Spigot Resource ID
+     * @param resourceId Spigot/Polymart Resource ID
+     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setChangelogLink(int spigotResourceId) {
-        return setChangelogLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId + SPIGOT_CHANGELOG_SUFFIX);
+    public UpdateChecker setChangelogLink(int resourceId, UpdateCheckSource updateCheckSource) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setChangelogLink(SPIGOT_DOWNLOAD_LINK + resourceId + SPIGOT_CHANGELOG_SUFFIX);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setChangelogLink(POLYMART_DOWNLOAD_LINK + resourceId + POLYMART_CHANGELOG_SUFFIX);
+        return this;
     }
 
     /**
@@ -690,15 +693,18 @@ public class UpdateChecker {
     }
 
     /**
-     * Sets the download link for your plugin generated from your plugin's SpigotMC
+     * Sets the download link for your plugin generated from your plugin's SpigotMC/Polymart
      * Resource ID. Use this if there is only one version of your plugin, either
      * only a free or only a paid version.
      *
-     * @param spigotResourceId Spigot Resource ID
+     * @param resourceId Spigot/Polymart Resource ID
+     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setDownloadLink(int spigotResourceId) {
-        return setDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
@@ -728,14 +734,17 @@ public class UpdateChecker {
 
     /**
      * Sets the download link for the free version of your plugin generated from
-     * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
+     * your plugin's SpigotMC/Polymart Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId Spigot Resource ID of the free version
+     * @param resourceId Spigot/Polymart Resource ID of the free version
+     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setFreeDownloadLink(int spigotResourceId) {
-        return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setFreeDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setFreeDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
@@ -763,14 +772,17 @@ public class UpdateChecker {
 
     /**
      * Sets the download link for the paid version of your plugin generated from
-     * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
+     * your plugin's SpigotMC/Polymart Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId Spigot Resource ID of the paid version
+     * @param resourceId Spigot/Polymart Resource ID of the paid version
+     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setPaidDownloadLink(int spigotResourceId) {
-        return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setPaidDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setPaidDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
