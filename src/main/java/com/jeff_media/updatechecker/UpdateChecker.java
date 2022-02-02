@@ -82,6 +82,7 @@ public class UpdateChecker {
     private String usedVersion;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
+    private final UpdateCheckSource updateCheckSource;
 
     /**
      * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
@@ -114,7 +115,7 @@ public class UpdateChecker {
         final String apiLink;
         final ThrowingFunction<BufferedReader,String,IOException> mapper;
 
-        switch (updateCheckSource) {
+        switch (this.updateCheckSource = updateCheckSource) {
             case CUSTOM_URL:
                 apiLink = parameter;
                 mapper = VersionMapper.TRIM_FIRST_LINE;
@@ -417,10 +418,9 @@ public class UpdateChecker {
      * Resource ID
      *
      * @param resourceId Spigot/Polymart Resource ID
-     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setChangelogLink(int resourceId, UpdateCheckSource updateCheckSource) {
+    public UpdateChecker setChangelogLink(int resourceId) {
         if (updateCheckSource == UpdateCheckSource.SPIGOT) return setChangelogLink(SPIGOT_DOWNLOAD_LINK + resourceId + SPIGOT_CHANGELOG_SUFFIX);
         if (updateCheckSource == UpdateCheckSource.POLYMART) return setChangelogLink(POLYMART_DOWNLOAD_LINK + resourceId + POLYMART_CHANGELOG_SUFFIX);
         return this;
@@ -698,10 +698,9 @@ public class UpdateChecker {
      * only a free or only a paid version.
      *
      * @param resourceId Spigot/Polymart Resource ID
-     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+    public UpdateChecker setDownloadLink(int resourceId) {
         if (updateCheckSource == UpdateCheckSource.SPIGOT) return setDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
         if (updateCheckSource == UpdateCheckSource.POLYMART) return setDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
@@ -738,10 +737,9 @@ public class UpdateChecker {
      * paid version of your plugin available.
      *
      * @param resourceId Spigot/Polymart Resource ID of the free version
-     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setFreeDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+    public UpdateChecker setFreeDownloadLink(int resourceId) {
         if (updateCheckSource == UpdateCheckSource.SPIGOT) return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
         if (updateCheckSource == UpdateCheckSource.POLYMART) return setFreeDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
@@ -776,10 +774,9 @@ public class UpdateChecker {
      * paid version of your plugin available.
      *
      * @param resourceId Spigot/Polymart Resource ID of the paid version
-     * @param updateCheckSource Source where to check for updates
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setPaidDownloadLink(int resourceId, UpdateCheckSource updateCheckSource) {
+    public UpdateChecker setPaidDownloadLink(int resourceId) {
         if (updateCheckSource == UpdateCheckSource.SPIGOT) return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
         if (updateCheckSource == UpdateCheckSource.POLYMART) return setPaidDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
