@@ -49,6 +49,9 @@ public class UpdateChecker {
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
+    private static final String POLYMART_CHANGELOG_SUFFIX = "/updates";
+    private static final String POLYMART_DOWNLOAD_LINK = "https://polymart.org/resource/";
+    private static final String POLYMART_UPDATE_API = "https://api.polymart.org/v1/getResourceInfoSimple/?resource_id=%s&key=version";
     private static final String SPIGET_UPDATE_API = "https://api.spiget.org/v2/resources/%s/versions/latest";
     private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
     private static UpdateChecker instance = null;
@@ -118,6 +121,10 @@ public class UpdateChecker {
                 break;
             case SPIGOT:
                 apiLink = String.format(SPIGOT_UPDATE_API, parameter);
+                mapper = VersionMapper.TRIM_FIRST_LINE;
+                break;
+            case POLYMART:
+                apiLink = String.format(POLYMART_UPDATE_API, parameter);
                 mapper = VersionMapper.TRIM_FIRST_LINE;
                 break;
             case SPIGET:
