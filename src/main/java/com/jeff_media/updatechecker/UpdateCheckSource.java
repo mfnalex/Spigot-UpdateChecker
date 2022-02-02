@@ -29,6 +29,10 @@ public enum UpdateCheckSource {
      */
     SPIGOT,
     /**
+     * Polymart API. Trustworthy, but slow. Requires the Polymart resource ID (the number at the end of your plugin's Polymart URL) as parameter in {@link UpdateChecker#UpdateChecker(JavaPlugin, UpdateCheckSource, String)}.
+     */
+    POLYMART,
+    /**
      * Spiget API. Not official, but faster than SpigotMC API. Requires the SpigotMC resource ID (the number at the end of your plugin's SpigotMC URL) as parameter in {@link UpdateChecker#UpdateChecker(JavaPlugin, UpdateCheckSource, String)}.
      */
     SPIGET,

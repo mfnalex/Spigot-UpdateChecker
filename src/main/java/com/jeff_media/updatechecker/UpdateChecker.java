@@ -49,6 +49,9 @@ public class UpdateChecker {
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/legacy/update.php?resource=%s";
+    private static final String POLYMART_CHANGELOG_SUFFIX = "/updates";
+    private static final String POLYMART_DOWNLOAD_LINK = "https://polymart.org/resource/";
+    private static final String POLYMART_UPDATE_API = "https://api.polymart.org/v1/getResourceInfoSimple/?resource_id=%s&key=version";
     private static final String SPIGET_UPDATE_API = "https://api.spiget.org/v2/resources/%s/versions/latest";
     private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
     private static UpdateChecker instance = null;
@@ -79,6 +82,7 @@ public class UpdateChecker {
     private String usedVersion;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
+    private final UpdateCheckSource updateCheckSource;
 
     /**
      * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
@@ -111,13 +115,17 @@ public class UpdateChecker {
         final String apiLink;
         final ThrowingFunction<BufferedReader,String,IOException> mapper;
 
-        switch (updateCheckSource) {
+        switch (this.updateCheckSource = updateCheckSource) {
             case CUSTOM_URL:
                 apiLink = parameter;
                 mapper = VersionMapper.TRIM_FIRST_LINE;
                 break;
             case SPIGOT:
                 apiLink = String.format(SPIGOT_UPDATE_API, parameter);
+                mapper = VersionMapper.TRIM_FIRST_LINE;
+                break;
+            case POLYMART:
+                apiLink = String.format(POLYMART_UPDATE_API, parameter);
                 mapper = VersionMapper.TRIM_FIRST_LINE;
                 break;
             case SPIGET:
@@ -406,14 +414,16 @@ public class UpdateChecker {
     }
 
     /**
-     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC
+     * Sets a link to your plugin's changelog generated from your plugin's SpigotMC/Polymart
      * Resource ID
      *
-     * @param spigotResourceId Spigot Resource ID
+     * @param resourceId Spigot/Polymart Resource ID
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setChangelogLink(int spigotResourceId) {
-        return setChangelogLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId + SPIGOT_CHANGELOG_SUFFIX);
+    public UpdateChecker setChangelogLink(int resourceId) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setChangelogLink(SPIGOT_DOWNLOAD_LINK + resourceId + SPIGOT_CHANGELOG_SUFFIX);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setChangelogLink(POLYMART_DOWNLOAD_LINK + resourceId + POLYMART_CHANGELOG_SUFFIX);
+        return this;
     }
 
     /**
@@ -683,15 +693,17 @@ public class UpdateChecker {
     }
 
     /**
-     * Sets the download link for your plugin generated from your plugin's SpigotMC
+     * Sets the download link for your plugin generated from your plugin's SpigotMC/Polymart
      * Resource ID. Use this if there is only one version of your plugin, either
      * only a free or only a paid version.
      *
-     * @param spigotResourceId Spigot Resource ID
+     * @param resourceId Spigot/Polymart Resource ID
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setDownloadLink(int spigotResourceId) {
-        return setDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setDownloadLink(int resourceId) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
@@ -721,14 +733,16 @@ public class UpdateChecker {
 
     /**
      * Sets the download link for the free version of your plugin generated from
-     * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
+     * your plugin's SpigotMC/Polymart Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId Spigot Resource ID of the free version
+     * @param resourceId Spigot/Polymart Resource ID of the free version
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setFreeDownloadLink(int spigotResourceId) {
-        return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setFreeDownloadLink(int resourceId) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setFreeDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
@@ -756,14 +770,16 @@ public class UpdateChecker {
 
     /**
      * Sets the download link for the paid version of your plugin generated from
-     * your plugin's SpigotMC Resource ID. Use this if there is both, a free and a
+     * your plugin's SpigotMC/Polymart Resource ID. Use this if there is both, a free and a
      * paid version of your plugin available.
      *
-     * @param spigotResourceId Spigot Resource ID of the paid version
+     * @param resourceId Spigot/Polymart Resource ID of the paid version
      * @return UpdateChecker instance being ran
      */
-    public UpdateChecker setPaidDownloadLink(int spigotResourceId) {
-        return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + spigotResourceId);
+    public UpdateChecker setPaidDownloadLink(int resourceId) {
+        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART) return setPaidDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        return this;
     }
 
     /**
