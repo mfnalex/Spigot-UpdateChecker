@@ -85,10 +85,10 @@ class UpdateCheckerMessages {
                 lines.add("Download:");
                 lines.add("  " + downloadLinks.get(0));
             } else if (downloadLinks.size() == 2) {
-                lines.add("Download (Plus):");
+                lines.add(String.format("Download (%s)", instance.getNamePaidVersion()));
                 lines.add("  " + downloadLinks.get(0));
                 lines.add(" ");
-                lines.add("Download (Free):");
+                lines.add(String.format("Download (%s)", instance.getNameFreeVersion()));
                 lines.add("  " + downloadLinks.get(1));
             }
         }
