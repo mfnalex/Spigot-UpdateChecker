@@ -38,4 +38,5 @@ interface VersionMapper {
         JsonObject release = array.get(0).getAsJsonObject();
         return release.get("tag_name").getAsString();
     };
+    ThrowingFunction<BufferedReader, String, IOException> SPIGOT = reader -> new Gson().fromJson(reader, JsonObject.class).get("current_version").getAsString();
 }
