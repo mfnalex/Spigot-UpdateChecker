@@ -222,7 +222,7 @@ The used obfuscation settings are allowed on SpigotMC for both free and paid plu
 
 ## JavaDocs and Example plugin
 
-JavaDocs are available here: https://repo.jeff-media.de/javadocs/SpigotUpdateChecker/
+JavaDocs are available here: https://hub.jeff-media.com/javadocs/spigotupdatechecker/
 
 Example plugin: https://github.com/JEFF-Media-GbR/Spigot-UpdateChecker-Example
 
