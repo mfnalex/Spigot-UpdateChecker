@@ -1,3 +1,10 @@
+## 2.3.0
+- Switched to new SpigotMC API
+
+## 2.2.0
+- Added support for Polymart 
+- Fixed console not showing the custom plugin name when using setNamePaidVersion and setNameFreeVersion
+
 ## 2.1.0
 
 Added support for GitHub Release tags.
