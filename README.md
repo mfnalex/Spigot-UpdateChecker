@@ -1,10 +1,10 @@
 # SpigotUpdateChecker
 <!--- Buttons start -->
 <p align="center">
-  <a href="https://spigotmc.org/">
+  <a href="https://www.spigotmc.org/threads/spigotupdatechecker-powerful-update-checker-with-only-one-line-of-code.500010/">
     <img src="https://static.jeff-media.com/img/button_spigotmc_thread.png?3" alt="SpigotMC Thread">
   </a>
-  <a href="https://hub.jeff-media.com/javadocs/">
+  <a href="https://hub.jeff-media.com/javadocs/spigotupdatechecker">
     <img src="https://static.jeff-media.com/img/button_javadocs.png?3" alt="Javadocs">
   </a>
   <a href="https://discord.jeff-media.com/">
