@@ -1,11 +1,9 @@
 # SpigotUpdateChecker
 <!--- Buttons start -->
-<p align="center">
 [![SpigotMC Thread](https://static.jeff-media.com/img/button_spigotmc_thread.png)](https://spigotmc.org/)
 [![Javadocs](https://static.jeff-media.com/img/button_javadocs.png)](https://hub.jeff-media.com/javadocs/)
 [![Discord](https://static.jeff-media.com/img/button_discord.png)](https://discord.jeff-media.com/)
 [![Donate](https://static.jeff-media.com/img/button_donate.png)](https://paypal.me/mfnalex)
-</p>
 <!--- Buttons end -->
 
 SpigotUpdateChecker is a simple but powerful library to add a perfectly working update checker to your plugins. **Scroll
