@@ -22,7 +22,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -72,8 +71,10 @@ class UpdateCheckerMessages {
 
         lines.add(String.format("There is a new version of %s available!", plugin.getName()));
         lines.add(" ");
-        lines.add(String.format("Your version:   %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
-        lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
+        lines.add(String.format("Your version:   %s%s", instance.isColoredConsoleOutput() ? MessageColor.VERSION_OLDER
+            : "", event.getUsedVersion()));
+        lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? MessageColor.VERSION_NEWER
+            : "", event.getLatestVersion()));
 
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
@@ -99,15 +100,17 @@ class UpdateCheckerMessages {
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
         if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
-            player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
+            player.sendMessage(MessageColor.STANDARD + "There is a new version of " + MessageColor.HIGHLIGHT + instance.getPlugin().getName() + MessageColor.STANDARD + " available.");
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
+            player.sendMessage(MessageColor.NOTE + "Latest version: " + MessageColor.VERSION_NEWER + instance.getLatestVersion() + MessageColor.NOTE + " | Your version: " + MessageColor.VERSION_OLDER
+                + instance.getUsedVersion());
             player.sendMessage("");
         } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
-            player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
+            player.sendMessage(MessageColor.HIGHLIGHT + instance.getPlugin().getName() + MessageColor.SEVERE
+                + " could not check for updates.");
         } else {
             if (showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+                player.sendMessage(MessageColor.SUCCESS + "You are running the latest version of " + MessageColor.HIGHLIGHT + instance.getPlugin().getName());
             }
         }
     }
