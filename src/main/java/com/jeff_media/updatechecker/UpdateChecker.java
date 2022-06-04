@@ -56,7 +56,6 @@ public class UpdateChecker {
     private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
-    @SuppressWarnings("CanBeFinal")
     private final String spigotUserId = "%%__USER__%%";
     private final String apiLink;
     private final Plugin plugin;
@@ -72,6 +71,7 @@ public class UpdateChecker {
     private boolean notifyOpsOnJoin = true;
     private String notifyPermission = null;
     private boolean notifyRequesters = true;
+    private String supportLink = null;
     private boolean suppressUpToDateMessage = false;
     private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex) -> ex.printStackTrace();
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
@@ -434,6 +434,28 @@ public class UpdateChecker {
      */
     public UpdateChecker setChangelogLink(@Nullable String link) {
         changelogLink = link;
+        return this;
+    }
+
+    /**
+     * Returns the support link
+     *
+     * @return Support Link
+     */
+    @Nullable
+    public String getSupportLink() {
+        return supportLink;
+    }
+
+    /**
+     * Sets a link to your plugin's support channel.
+     *
+     * @param link Support link
+     * @return UpdateChecker instance being ran
+     */
+    @NotNull
+    public UpdateChecker setSupportLink(@Nullable String link) {
+        this.supportLink = link;
         return this;
     }
 
