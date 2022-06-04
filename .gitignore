@@ -107,3 +107,7 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 /lib/
+
+### IntelliJ###
+*.iml
+.idea/
