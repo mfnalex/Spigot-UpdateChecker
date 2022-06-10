@@ -150,6 +150,9 @@ class UpdateCheckerMessages {
         if (instance.getChangelogLink() != null) {
             links.add(createLink("Changelog", instance.getChangelogLink()));
         }
+        if (instance.getSupportLink() != null) {
+            links.add(createLink("Support", instance.getSupportLink()));
+        }
 
         final TextComponent placeholder = new TextComponent(" | ");
         placeholder.setColor(net.md_5.bungee.api.ChatColor.GRAY);
