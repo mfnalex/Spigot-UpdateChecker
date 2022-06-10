@@ -85,7 +85,7 @@ Please note that you will also have to shade and relocate the UpdateChecker into
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.2.1</version>
+            <version>3.3.0</version>
             <configuration>
                 <relocations>
                     <!-- Using the maven-shade-plugin to shade and relocate the UpdateChecker -->
