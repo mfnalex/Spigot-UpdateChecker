@@ -1,3 +1,6 @@
+## 2.3.1
+- Added option to show a support link (thanks @lokka30)
+
 ## 2.3.0
 - Switched to new SpigotMC API
 
