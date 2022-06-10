@@ -69,7 +69,7 @@ The UpdateChecker is available in my public repository:
     <dependency>
         <groupId>com.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>2.3.1</version>
+        <version>3.0.0</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>

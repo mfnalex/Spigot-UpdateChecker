@@ -41,11 +41,7 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("UnusedReturnValue")
 public class UpdateChecker {
 
-    static {
-        checkRelocation();
-    }
-
-    static final String VERSION = "2.1.1";
+    static final String VERSION = "3.0.0";
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/simple/0.2/index.php?action=getResource&id=%s";
@@ -56,10 +52,17 @@ public class UpdateChecker {
     private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
+
+    static {
+        checkRelocation();
+    }
+
     private final String spigotUserId = "%%__USER__%%";
     private final String apiLink;
-    private final Plugin plugin;
     private final ThrowingFunction<BufferedReader, String, IOException> mapper;
+    private final UpdateCheckSource updateCheckSource;
+    private final VersionSupplier supplier;
+    private final Plugin plugin;
     private String changelogLink = null;
     private boolean checkedAtLeastOnce = false;
     private boolean coloredConsoleOutput = false;
@@ -82,7 +85,41 @@ public class UpdateChecker {
     private String usedVersion;
     private String userAgentString = null;
     private boolean usingPaidVersion = false;
-    private final UpdateCheckSource updateCheckSource;
+
+    {
+        instance = this;
+    }
+
+    /**
+     * Initializes an UpdateChecker instance with a custom {@link VersionSupplier}.
+     *
+     * @param plugin   Instance of your plugin
+     * @param supplier VersionSupplier that supplies the latest version of your plugin
+     */
+    public UpdateChecker(@NotNull JavaPlugin plugin, @NotNull VersionSupplier supplier) {
+        this.plugin = plugin;
+        this.apiLink = null;
+        this.supplier = supplier;
+        this.updateCheckSource = null;
+        this.mapper = null;
+        init();
+    }
+
+    private void init() {
+
+        Objects.requireNonNull(plugin, "Plugin cannot be null.");
+
+        this.usedVersion = plugin.getDescription().getVersion().trim();
+
+        if (detectPaidVersion()) {
+            usingPaidVersion = true;
+        }
+
+        if (!listenerAlreadyRegistered) {
+            Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
+            listenerAlreadyRegistered = true;
+        }
+    }
 
     /**
      * Detects whether the Spigot User ID placeholder has been properly replaced by a numeric string
@@ -94,26 +131,20 @@ public class UpdateChecker {
     }
 
     /**
-     * Gets the current UpdateChecker singleton if it has been created, otherwise null.
+     * Initializes an UpdateChecker instance.
      *
-     * @return UpdateChecker instance being ran, or null if {@link #UpdateChecker(JavaPlugin, UpdateCheckSource, String)} wasn't called yet.
-     * @deprecated As of SpigotUpdateChecker 1.4.0, more than one instance can exist at the same time. Keep track of the instances you created yourself.
-     */
-    @Deprecated
-    public static UpdateChecker getInstance() {
-        return instance;
-    }
-
-    /**
-     * Initializes the UpdateChecker instance. HAS to be called before the UpdateChecker can run.
-     * @param plugin            Main class of your plugin
-     * @param updateCheckSource Source where to check for updates
+     * @param plugin            Instance of your plugin
+     * @param updateCheckSource Source where to check for updates. To use a custom source, see {@link UpdateChecker#UpdateChecker(JavaPlugin, VersionSupplier)}
      * @param parameter         Parameter for the update checker source. See {@link UpdateCheckSource} for more informatino
      */
     public UpdateChecker(@NotNull JavaPlugin plugin, @NotNull UpdateCheckSource updateCheckSource, @NotNull String parameter) {
 
+        this.plugin = plugin;
+
+        this.supplier = null;
+
         final String apiLink;
-        final ThrowingFunction<BufferedReader,String,IOException> mapper;
+        final ThrowingFunction<BufferedReader, String, IOException> mapper;
 
         switch (this.updateCheckSource = updateCheckSource) {
             case CUSTOM_URL:
@@ -134,33 +165,34 @@ public class UpdateChecker {
                 break;
             case GITHUB_RELEASE_TAG:
                 String[] split = parameter.split("/");
-                if(split.length<2) {
+                if (split.length < 2) {
                     throw new IllegalArgumentException("Given GitHub repository must be in the format \"<UserOrOrganizationName>/<RepositoryName>\"");
                 }
-                apiLink = String.format(GITHUB_RELEASE_API,split[0],split[1]);
+                apiLink = String.format(GITHUB_RELEASE_API, split[0], split[1]);
                 mapper = VersionMapper.GITHUB_RELEASE_TAG;
                 break;
             default:
                 throw new UnsupportedOperationException();
         }
 
-        instance = this;
-        Objects.requireNonNull(plugin, "Plugin cannot be null.");
         Objects.requireNonNull(apiLink, "API Link cannot be null.");
 
-        this.plugin = plugin;
-        this.usedVersion = plugin.getDescription().getVersion().trim();
         this.apiLink = apiLink;
         this.mapper = mapper;
 
-        if (detectPaidVersion()) {
-            usingPaidVersion = true;
-        }
+        init();
 
-        if (!listenerAlreadyRegistered) {
-            Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
-            listenerAlreadyRegistered = true;
-        }
+    }
+
+    /**
+     * Gets the current UpdateChecker singleton if it has been created, otherwise null.
+     *
+     * @return UpdateChecker instance being ran, or null if {@link #UpdateChecker(JavaPlugin, UpdateCheckSource, String)} wasn't called yet.
+     * @deprecated As of SpigotUpdateChecker 1.4.0, more than one instance can exist at the same time. Keep track of the instances you created yourself.
+     */
+    @Deprecated
+    public static UpdateChecker getInstance() {
+        return instance;
     }
 
     /**
@@ -175,7 +207,7 @@ public class UpdateChecker {
      */
     @Deprecated
     public static UpdateChecker init(@NotNull JavaPlugin plugin, int spigotResourceId) {
-        return new UpdateChecker(plugin, UpdateCheckSource.SPIGOT,String.valueOf(spigotResourceId));
+        return new UpdateChecker(plugin, UpdateCheckSource.SPIGOT, String.valueOf(spigotResourceId));
     }
 
     /**
@@ -191,6 +223,20 @@ public class UpdateChecker {
     @Deprecated
     public static UpdateChecker init(@NotNull JavaPlugin plugin, @NotNull String apiLink) {
         return new UpdateChecker(plugin, UpdateCheckSource.CUSTOM_URL, apiLink);
+    }
+
+    /**
+     * Checks that the class was properly relocated. Proudly stolen from bStats.org
+     */
+    private static void checkRelocation() {
+        if (Bukkit.getServer().getClass().getName().equals("be.seeseemelk.mockbukkit.ServerMock")) return;
+        final String defaultPackageDe = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String defaultPackageCom = new String(new byte[]{'c', 'o', 'm', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
+        final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
+        String packageName = UpdateChecker.class.getPackage().getName();
+        if (packageName.startsWith(defaultPackageDe) || packageName.startsWith(defaultPackageCom) || packageName.startsWith(examplePackage)) {
+            throw new IllegalStateException("SpigotUpdateChecker class has not been relocated correctly! Check the GitHub's README.md for instructions.");
+        }
     }
 
     /**
@@ -218,8 +264,7 @@ public class UpdateChecker {
         long ticks = ((int) seconds) * 20L;
         stop();
         if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> checkNow(Bukkit.getConsoleSender()), ticks,
-                    ticks);
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
         } else {
             taskId = -1;
         }
@@ -249,8 +294,8 @@ public class UpdateChecker {
         if (plugin == null) {
             throw new IllegalStateException("Plugin has not been set.");
         }
-        if (apiLink == null) {
-            throw new IllegalStateException("API Link has not been set.");
+        if (apiLink == null && supplier == null) {
+            throw new IllegalStateException("API Link has not been set and no supplier was provided.");
         }
 
         checkedAtLeastOnce = true;
@@ -264,16 +309,17 @@ public class UpdateChecker {
             UpdateCheckEvent updateCheckEvent;
 
             try {
-                final HttpURLConnection httpConnection = (HttpURLConnection) new URL(apiLink).openConnection();
-                httpConnection.addRequestProperty("User-Agent", userAgentString);
-                if (timeout > 0) {
-                    httpConnection.setConnectTimeout(timeout);
-                }
-                try (
-                        final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream());
-                        final BufferedReader reader = new BufferedReader(input)
-                ) {
-                    latestVersion = mapper.apply(reader);
+                if (supplier != null) {
+                    latestVersion = supplier.getLatestVersionString();
+                } else {
+                    final HttpURLConnection httpConnection = (HttpURLConnection) new URL(apiLink).openConnection();
+                    httpConnection.addRequestProperty("User-Agent", userAgentString);
+                    if (timeout > 0) {
+                        httpConnection.setConnectTimeout(timeout);
+                    }
+                    try (final InputStreamReader input = new InputStreamReader(httpConnection.getInputStream()); final BufferedReader reader = new BufferedReader(input)) {
+                        latestVersion = mapper.apply(reader);
+                    }
                 }
 
                 if (!isUsingLatestVersion() && !isOtherVersionNewer(usedVersion, latestVersion)) {
@@ -351,21 +397,6 @@ public class UpdateChecker {
     }
 
     /**
-     * Checks that the class was properly relocated. Proudly stolen from bStats.org
-     */
-    private static void checkRelocation() {
-        final String defaultPackageDe = new String(new byte[]{'d', 'e', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
-        final String defaultPackageCom = new String(new byte[]{'c', 'o', 'm', '.', 'j', 'e', 'f', 'f', '_', 'm', 'e', 'd', 'i', 'a', '.', 'u', 'p', 'd', 'a', 't', 'e', 'c', 'h', 'e', 'c', 'k', 'e', 'r'});
-        final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
-        String packageName = UpdateChecker.class.getPackage().getName();
-        if (packageName.startsWith(defaultPackageDe)
-                || packageName.startsWith(defaultPackageCom)
-                || packageName.startsWith(examplePackage)) {
-            throw new IllegalStateException("SpigotUpdateChecker class has not been relocated correctly! Check the GitHub's README.md for instructions.");
-        }
-    }
-
-    /**
      * Returns a list of applicable Download links.
      * <p>
      * If using the free version and there are links for the free and paid version,
@@ -421,8 +452,10 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker setChangelogLink(int resourceId) {
-        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setChangelogLink(SPIGOT_DOWNLOAD_LINK + resourceId + SPIGOT_CHANGELOG_SUFFIX);
-        if (updateCheckSource == UpdateCheckSource.POLYMART) return setChangelogLink(POLYMART_DOWNLOAD_LINK + resourceId + POLYMART_CHANGELOG_SUFFIX);
+        if (updateCheckSource == UpdateCheckSource.SPIGOT)
+            return setChangelogLink(SPIGOT_DOWNLOAD_LINK + resourceId + SPIGOT_CHANGELOG_SUFFIX);
+        if (updateCheckSource == UpdateCheckSource.POLYMART)
+            return setChangelogLink(POLYMART_DOWNLOAD_LINK + resourceId + POLYMART_CHANGELOG_SUFFIX);
         return this;
     }
 
@@ -553,7 +586,8 @@ public class UpdateChecker {
      *
      * @return Permission required to receive UpdateChecker messages on join, or null if not set
      */
-    public @Nullable String getNotifyPermission() {
+    public @Nullable
+    String getNotifyPermission() {
         return notifyPermission;
     }
 
@@ -724,7 +758,8 @@ public class UpdateChecker {
      */
     public UpdateChecker setDownloadLink(int resourceId) {
         if (updateCheckSource == UpdateCheckSource.SPIGOT) return setDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
-        if (updateCheckSource == UpdateCheckSource.POLYMART) return setDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART)
+            return setDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
     }
 
@@ -762,8 +797,10 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker setFreeDownloadLink(int resourceId) {
-        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
-        if (updateCheckSource == UpdateCheckSource.POLYMART) return setFreeDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.SPIGOT)
+            return setFreeDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART)
+            return setFreeDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
     }
 
@@ -799,8 +836,10 @@ public class UpdateChecker {
      * @return UpdateChecker instance being ran
      */
     public UpdateChecker setPaidDownloadLink(int resourceId) {
-        if (updateCheckSource == UpdateCheckSource.SPIGOT) return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
-        if (updateCheckSource == UpdateCheckSource.POLYMART) return setPaidDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.SPIGOT)
+            return setPaidDownloadLink(SPIGOT_DOWNLOAD_LINK + resourceId);
+        if (updateCheckSource == UpdateCheckSource.POLYMART)
+            return setPaidDownloadLink(POLYMART_DOWNLOAD_LINK + resourceId);
         return this;
     }
 
