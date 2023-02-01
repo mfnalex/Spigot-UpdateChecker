@@ -142,8 +142,8 @@ class UpdateCheckerMessages {
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
         if (downloadLinks.size() == 2) {
-            links.add(createLink(String.format("Download (%s)", instance.getNamePaidVersion()), downloadLinks.get(0)));
-            links.add(createLink(String.format("Download (%s)", instance.getNameFreeVersion()), downloadLinks.get(1)));
+            links.add(createLink(parsePlaceholders("Download (%resource-paid-name%)", instance), downloadLinks.get(0)));
+            links.add(createLink(parsePlaceholders("Download (%resource-name%)", instance), downloadLinks.get(1)));
         } else if (downloadLinks.size() == 1) {
             links.add(createLink("Download", downloadLinks.get(0)));
         }
@@ -157,8 +157,7 @@ class UpdateCheckerMessages {
             links.add(createLink("Support", instance.getSupportLink()));
         }
 
-        final TextComponent placeholder = new TextComponent(" | ");
-        placeholder.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+        final TextComponent placeholder = new TextComponent(translateHexColorCodes(" &7| "));
 
         TextComponent text = new TextComponent("");
 
