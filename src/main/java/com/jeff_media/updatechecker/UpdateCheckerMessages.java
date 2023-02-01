@@ -32,9 +32,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 class UpdateCheckerMessages {
+    private static final Pattern hexPattern = Pattern.compile("&#[a-fA-F0-9]{6}");
 
     @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
@@ -64,16 +67,16 @@ class UpdateCheckerMessages {
 
         if (event.getResult() == UpdateCheckResult.RUNNING_LATEST_VERSION) {
             if (UpdateChecker.getInstance().isSuppressUpToDateMessage()) return;
-            plugin.getLogger().info(String.format("You are using the latest version of %s.", plugin.getName()));
+            plugin.getLogger().info(parsePlaceholders( "You are using the latest version of %plugin-name%.", instance));
             return;
         }
 
         List<String> lines = new ArrayList<>();
 
-        lines.add(String.format("There is a new version of %s available!", plugin.getName()));
+        lines.add(parsePlaceholders("There is a new version of %plugin-name% available!", instance));
         lines.add(" ");
-        lines.add(String.format("Your version:   %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
-        lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
+        lines.add(parsePlaceholders("Your version:   &c%current-version%", instance));
+        lines.add(parsePlaceholders("Latest version: &a%latest-version%", instance));
 
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
@@ -85,10 +88,10 @@ class UpdateCheckerMessages {
                 lines.add("Download:");
                 lines.add("  " + downloadLinks.get(0));
             } else if (downloadLinks.size() == 2) {
-                lines.add(String.format("Download (%s)", instance.getNamePaidVersion()));
+                lines.add(parsePlaceholders("Download (%resource-paid-name%)", instance));
                 lines.add("  " + downloadLinks.get(0));
                 lines.add(" ");
-                lines.add(String.format("Download (%s)", instance.getNameFreeVersion()));
+                lines.add(parsePlaceholders("Download (%resource-free-name%)", instance));
                 lines.add("  " + downloadLinks.get(1));
             }
         }
@@ -99,15 +102,15 @@ class UpdateCheckerMessages {
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
         if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
-            player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
+            player.sendMessage(parsePlaceholders("&7There is a new version of &6%plugin-name% &7available.", instance));
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
+            player.sendMessage(parsePlaceholders("&8Latest version: &a%latest-version% &8| Your version: &c%current-version%", instance));
             player.sendMessage("");
         } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
-            player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
+            player.sendMessage(parsePlaceholders("&6%plugin-name% &ccould not check for updates.", instance));
         } else {
             if (showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+                player.sendMessage(parsePlaceholders("&aYou are running the latest version of &6%plugin-name%", instance));
             }
         }
     }
@@ -171,5 +174,45 @@ class UpdateCheckerMessages {
         for (Player player : players) {
             player.spigot().sendMessage(text);
         }
+    }
+
+    private static String parsePlaceholders(String string, UpdateChecker instance) {
+        List<String> downloadLinks = instance.getAppropriateDownloadLinks();
+
+        String changelogLink = instance.getChangelogLink();
+        if (changelogLink == null) changelogLink = "";
+
+        String donationLink = instance.getDonationLink();
+        if (donationLink == null) donationLink = "";
+
+        String supportLink = instance.getSupportLink();
+        if (supportLink == null) supportLink = "";
+
+        string = translateHexColorCodes(string)
+            .replaceAll("%latest-version%", instance.getUsedVersion())
+            .replaceAll("%current-version%", instance.getLatestVersion())
+            .replaceAll("%resource-name%", instance.getNameFreeVersion())
+            .replaceAll("%resource-link%", downloadLinks.get(1))
+            .replaceAll("%resource-paid-name%", instance.getNamePaidVersion())
+            .replaceAll("%resource-paid-link%", downloadLinks.get(0))
+            .replaceAll("%changelog-link%", changelogLink)
+            .replaceAll("%donation-link%", donationLink)
+            .replaceAll("%support-link%", supportLink)
+            .replaceAll("%plugin-name%", instance.getPlugin().getName());
+
+        return string;
+    }
+
+    private static String translateHexColorCodes(String string) {
+        string = string.replaceAll("§", "&");
+
+        // Parse message through Default Hex in format "&#rrggbb"
+        Matcher match = hexPattern.matcher(string);
+        while (match.find()) {
+            String color = string.substring(match.start() + 1, match.end());
+            string = string.replace("&" + color, net.md_5.bungee.api.ChatColor.of(color) + "");
+            match = hexPattern.matcher(string);
+        }
+        return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', string);
     }
 }
