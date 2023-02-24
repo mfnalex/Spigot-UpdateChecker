@@ -75,7 +75,7 @@ public class UpdateChecker {
     private String notifyPermission = null;
     private boolean notifyRequesters = true;
     private String supportLink = null;
-    private boolean suppressUpToDateMessage = false;
+    private boolean suppressUpToDateMessage = true;
     private BiConsumer<CommandSender[], Exception> onFail = (requesters, ex) -> ex.printStackTrace();
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
