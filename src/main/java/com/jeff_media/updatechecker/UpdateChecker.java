@@ -888,4 +888,102 @@ public class UpdateChecker {
         return this;
     }
 
+    /**
+     * Sets the Button Format string using plain text
+     *
+     * @param format message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setButtonFormat(@NotNull String format) {
+        UpdateCheckerMessages.setButtonFormat(format);
+        return this;
+    }
+
+    /**
+     * Sets the Button Link Format string using plain text
+     *
+     * @param format message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setButtonLinkFormat(@NotNull String format) {
+        UpdateCheckerMessages.setButtonLinkFormat(format);
+        return this;
+    }
+
+    /**
+     * Sets the Console's "using latest" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setConsoleUsingLatestMsg(@NotNull String message) {
+        UpdateCheckerMessages.setConsoleUsingLatestMsg(message);
+        return this;
+    }
+
+    /**
+     * Sets the Console's "new version" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setConsoleNewVersionMsg(@NotNull String message) {
+        UpdateCheckerMessages.setConsoleNewVersionMsg(message);
+        return this;
+    }
+
+    /**
+     * Sets whether the fancy console border is added
+     *
+     * @param border whether the border is enabled
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setConsoleBorder(boolean border) {
+        UpdateCheckerMessages.setConsoleBorder(border);
+        return this;
+    }
+
+    /**
+     * Sets the ingame "using latest" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setIngameUsingLatestMsg(@NotNull String message) {
+        UpdateCheckerMessages.setIngameUsingLatestMsg(message);
+        return this;
+    }
+
+    /**
+     * Sets the ingame "using latest" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setIngameNewVersionMsg(@NotNull String message) {
+        UpdateCheckerMessages.setIngameNewVersionMsg(message);
+        return this;
+    }
+
+    /**
+     * Sets the ingame "version changes" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setIngameVersionChangesMsg(@NotNull String message) {
+        UpdateCheckerMessages.setIngameVersionChangesMsg(message);
+        return this;
+    }
+
+    /**
+     * Sets the ingame "couldn't check for updates" message string using plain text
+     *
+     * @param message message format string
+     * @return UpdateChecker instance being ran
+     */
+    public UpdateChecker setCouldNotCheckForUpdatesMsg(@NotNull String message) {
+        UpdateCheckerMessages.setCouldNotCheckForUpdatesMsg(message);
+        return this;
+    }
 }

@@ -22,7 +22,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -32,20 +31,31 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 class UpdateCheckerMessages {
+    private static final Pattern hexPattern = Pattern.compile("&#[a-fA-F0-9]{6}");
+
+    private static String buttonFormat = "&6&l%button-name%";
+    private static String buttonLinkFormat = "&lLink: &r%link%";
+
+    // Console Messages
+    private static String consoleUsingLatestMsg = "You are using the latest version of %plugin-name%.";
+    private static String consoleNewVersionMsg = "There is a new version of %plugin-name% available!\n\nYour version:   &c%current-version%\nLatest version: &a%latest-version%\nPlease update to the newest version.\n";
+    private static boolean consoleBorder = true;
+
+    // In-game Messages
+    private static String ingameUsingLatestMsg = "&aYou are running the latest version of &6%plugin-name%";
+    private static String ingameNewVersionMsg = "&7There is a new version of &6%plugin-name% &7available.";
+    private static String ingameVersionChangesMsg = "&8Latest version: &a%latest-version% &8| Your version: &c%current-version%";
+    private static String couldNotCheckForUpdatesMsg = "&6%plugin-name% &ccould not check for updates.";
 
     @NotNull
     private static TextComponent createLink(@NotNull final String text, @NotNull final String link) {
-        final ComponentBuilder lore = new ComponentBuilder("Link: ")
-                .bold(true)
-                .append(link)
-                .bold(false);
-        final TextComponent component = new TextComponent(text);
-        component.setBold(true);
-        // TODO: Make color configurable
-        component.setColor(net.md_5.bungee.api.ChatColor.GOLD);
+        final ComponentBuilder lore = new ComponentBuilder(buttonLinkFormat.replaceAll("%link%", link));
+        final TextComponent component = new TextComponent(buttonFormat.replaceAll("%button-name%", text));
         component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
         //noinspection deprecation
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, lore.create()));
@@ -64,50 +74,47 @@ class UpdateCheckerMessages {
 
         if (event.getResult() == UpdateCheckResult.RUNNING_LATEST_VERSION) {
             if (UpdateChecker.getInstance().isSuppressUpToDateMessage()) return;
-            plugin.getLogger().info(String.format("You are using the latest version of %s.", plugin.getName()));
+            plugin.getLogger().info(parsePlaceholders(consoleUsingLatestMsg, instance));
             return;
         }
 
         List<String> lines = new ArrayList<>();
 
-        lines.add(String.format("There is a new version of %s available!", plugin.getName()));
-        lines.add(" ");
-        lines.add(String.format("Your version:   %s%s", instance.isColoredConsoleOutput() ? ChatColor.RED : "", event.getUsedVersion()));
-        lines.add(String.format("Latest version: %s%s", instance.isColoredConsoleOutput() ? ChatColor.GREEN : "", event.getLatestVersion()));
+        for (String line : consoleNewVersionMsg.split("\n")) {
+            lines.add(parsePlaceholders(line, instance));
+        }
 
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
         if (downloadLinks.size() > 0) {
-            lines.add(" ");
-            lines.add("Please update to the newest version.");
-            lines.add(" ");
             if (downloadLinks.size() == 1) {
                 lines.add("Download:");
                 lines.add("  " + downloadLinks.get(0));
             } else if (downloadLinks.size() == 2) {
-                lines.add(String.format("Download (%s)", instance.getNamePaidVersion()));
+                lines.add(parsePlaceholders("Download (%resource-paid-name%)", instance));
                 lines.add("  " + downloadLinks.get(0));
                 lines.add(" ");
-                lines.add(String.format("Download (%s)", instance.getNameFreeVersion()));
+                lines.add(parsePlaceholders("Download (%resource-free-name%)", instance));
                 lines.add("  " + downloadLinks.get(1));
             }
         }
 
-        printNiceBoxToConsole(plugin.getLogger(), lines);
+        if (consoleBorder) printNiceBoxToConsole(plugin.getLogger(), lines);
+        else lines.forEach(line -> plugin.getLogger().log(Level.WARNING, line));
     }
 
     protected static void printCheckResultToPlayer(Player player, boolean showMessageWhenLatestVersion) {
         UpdateChecker instance = UpdateChecker.getInstance();
         if (instance.getLastCheckResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
-            player.sendMessage(ChatColor.GRAY + "There is a new version of " + ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.GRAY + " available.");
+            player.sendMessage(parsePlaceholders(ingameNewVersionMsg, instance));
             sendLinks(player);
-            player.sendMessage(ChatColor.DARK_GRAY + "Latest version: " + ChatColor.GREEN + instance.getLatestVersion() + ChatColor.DARK_GRAY + " | Your version: " + ChatColor.RED + instance.getUsedVersion());
+            player.sendMessage(parsePlaceholders(ingameVersionChangesMsg, instance));
             player.sendMessage("");
         } else if (instance.getLastCheckResult() == UpdateCheckResult.UNKNOWN) {
-            player.sendMessage(ChatColor.GOLD + instance.getPlugin().getName() + ChatColor.RED + " could not check for updates.");
+            player.sendMessage(parsePlaceholders(couldNotCheckForUpdatesMsg, instance));
         } else {
             if (showMessageWhenLatestVersion) {
-                player.sendMessage(ChatColor.GREEN + "You are running the latest version of " + ChatColor.GOLD + instance.getPlugin().getName());
+                player.sendMessage(parsePlaceholders(ingameUsingLatestMsg, instance));
             }
         }
     }
@@ -139,8 +146,8 @@ class UpdateCheckerMessages {
         List<String> downloadLinks = instance.getAppropriateDownloadLinks();
 
         if (downloadLinks.size() == 2) {
-            links.add(createLink(String.format("Download (%s)", instance.getNamePaidVersion()), downloadLinks.get(0)));
-            links.add(createLink(String.format("Download (%s)", instance.getNameFreeVersion()), downloadLinks.get(1)));
+            links.add(createLink(parsePlaceholders("Download (%resource-paid-name%)", instance), downloadLinks.get(0)));
+            links.add(createLink(parsePlaceholders("Download (%resource-name%)", instance), downloadLinks.get(1)));
         } else if (downloadLinks.size() == 1) {
             links.add(createLink("Download", downloadLinks.get(0)));
         }
@@ -154,8 +161,7 @@ class UpdateCheckerMessages {
             links.add(createLink("Support", instance.getSupportLink()));
         }
 
-        final TextComponent placeholder = new TextComponent(" | ");
-        placeholder.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+        final TextComponent placeholder = new TextComponent(translateHexColorCodes(" &7| "));
 
         TextComponent text = new TextComponent("");
 
@@ -171,5 +177,80 @@ class UpdateCheckerMessages {
         for (Player player : players) {
             player.spigot().sendMessage(text);
         }
+    }
+
+    private static String parsePlaceholders(String string, UpdateChecker instance) {
+        List<String> downloadLinks = instance.getAppropriateDownloadLinks();
+
+        String changelogLink = instance.getChangelogLink();
+        if (changelogLink == null) changelogLink = "";
+
+        String donationLink = instance.getDonationLink();
+        if (donationLink == null) donationLink = "";
+
+        String supportLink = instance.getSupportLink();
+        if (supportLink == null) supportLink = "";
+
+        string = translateHexColorCodes(string)
+            .replaceAll("%latest-version%", instance.getUsedVersion())
+            .replaceAll("%current-version%", instance.getLatestVersion())
+            .replaceAll("%resource-name%", instance.getNameFreeVersion())
+            .replaceAll("%resource-link%", downloadLinks.get(1))
+            .replaceAll("%resource-paid-name%", instance.getNamePaidVersion())
+            .replaceAll("%resource-paid-link%", downloadLinks.get(0))
+            .replaceAll("%changelog-link%", changelogLink)
+            .replaceAll("%donation-link%", donationLink)
+            .replaceAll("%support-link%", supportLink)
+            .replaceAll("%plugin-name%", instance.getPlugin().getName());
+
+        return string;
+    }
+
+    private static String translateHexColorCodes(String string) {
+        string = string.replaceAll("§", "&");
+
+        // Parse message through Default Hex in format "&#rrggbb"
+        Matcher match = hexPattern.matcher(string);
+        while (match.find()) {
+            String color = string.substring(match.start() + 1, match.end());
+            string = string.replace("&" + color, net.md_5.bungee.api.ChatColor.of(color) + "");
+            match = hexPattern.matcher(string);
+        }
+        return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', string);
+    }
+
+    public static void setButtonFormat(String format) {
+        UpdateCheckerMessages.buttonFormat = format;
+    }
+
+    public static void setButtonLinkFormat(String format) {
+        UpdateCheckerMessages.buttonLinkFormat = format;
+    }
+
+    public static void setConsoleUsingLatestMsg(String message) {
+        UpdateCheckerMessages.consoleUsingLatestMsg = message;
+    }
+    public static void setConsoleNewVersionMsg(String message) {
+        UpdateCheckerMessages.consoleNewVersionMsg = message;
+    }
+
+    public static void setConsoleBorder(boolean border) {
+        UpdateCheckerMessages.consoleBorder = border;
+    }
+
+    public static void setIngameUsingLatestMsg(String message) {
+        UpdateCheckerMessages.ingameUsingLatestMsg = message;
+    }
+
+    public static void setIngameNewVersionMsg(String message) {
+        UpdateCheckerMessages.ingameNewVersionMsg = message;
+    }
+
+    public static void setIngameVersionChangesMsg(String message) {
+        UpdateCheckerMessages.ingameVersionChangesMsg = message;
+    }
+
+    public static void setCouldNotCheckForUpdatesMsg(String message) {
+        UpdateCheckerMessages.couldNotCheckForUpdatesMsg = message;
     }
 }
