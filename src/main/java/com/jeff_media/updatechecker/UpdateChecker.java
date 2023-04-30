@@ -50,6 +50,7 @@ public class UpdateChecker {
     private static final String POLYMART_UPDATE_API = "https://api.polymart.org/v1/getResourceInfoSimple/?resource_id=%s&key=version";
     private static final String SPIGET_UPDATE_API = "https://api.spiget.org/v2/resources/%s/versions/latest";
     private static final String GITHUB_RELEASE_API = "https://api.github.com/repos/%s/%s/releases";
+    private static final String HANGAR_RELEASE_API =  "https://hangar.papermc.io/api/v1/projects/%s/%s/latest?channel=%s";
     private static UpdateChecker instance = null;
     private static boolean listenerAlreadyRegistered = false;
 
@@ -147,23 +148,27 @@ public class UpdateChecker {
         final ThrowingFunction<BufferedReader, String, IOException> mapper;
 
         switch (this.updateCheckSource = updateCheckSource) {
-            case CUSTOM_URL:
+            case CUSTOM_URL: {
                 apiLink = parameter;
                 mapper = VersionMapper.TRIM_FIRST_LINE;
                 break;
-            case SPIGOT:
+            }
+            case SPIGOT: {
                 apiLink = String.format(SPIGOT_UPDATE_API, parameter);
                 mapper = VersionMapper.SPIGOT;
                 break;
-            case POLYMART:
+            }
+            case POLYMART: {
                 apiLink = String.format(POLYMART_UPDATE_API, parameter);
                 mapper = VersionMapper.TRIM_FIRST_LINE;
                 break;
-            case SPIGET:
+            }
+            case SPIGET: {
                 apiLink = String.format(SPIGET_UPDATE_API, parameter);
                 mapper = VersionMapper.SPIGET;
                 break;
-            case GITHUB_RELEASE_TAG:
+            }
+            case GITHUB_RELEASE_TAG: {
                 String[] split = parameter.split("/");
                 if (split.length < 2) {
                     throw new IllegalArgumentException("Given GitHub repository must be in the format \"<UserOrOrganizationName>/<RepositoryName>\"");
@@ -171,6 +176,17 @@ public class UpdateChecker {
                 apiLink = String.format(GITHUB_RELEASE_API, split[0], split[1]);
                 mapper = VersionMapper.GITHUB_RELEASE_TAG;
                 break;
+            }
+            case HANGAR: {
+                String[] split = parameter.split("/");
+                if (split.length <3) {
+                    throw new IllegalArgumentException("Given HangarMC project must be in the format \"<UserOrOrganizationName>/<ProjectName>/<ReleaseChannel>\"");
+                }
+
+                apiLink = String.format(HANGAR_RELEASE_API, split[0], split[1], split[2]);
+                mapper = VersionMapper.TRIM_FIRST_LINE;
+                break;
+            }
             default:
                 throw new UnsupportedOperationException();
         }
