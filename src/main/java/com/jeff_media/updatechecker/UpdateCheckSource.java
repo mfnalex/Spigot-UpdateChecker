@@ -41,6 +41,10 @@ public enum UpdateCheckSource {
      */
     GITHUB_RELEASE_TAG,
     /**
+     * Hangar API. Requires your resource in the format "UserName/ProjectName/ReleaseChannel" (for example: "JEFF-Media-GbR/ChestSort/Release") as parameter in {@link UpdateChecker#UpdateChecker(JavaPlugin, UpdateCheckSource, String)}. It will use the latest release's version string according to that release channel.
+     */
+    HANGAR,
+    /**
      * Custom link on where to fetch update checking information. Requires an HTTP or HTTPS URL as parameter in {@link UpdateChecker#UpdateChecker(JavaPlugin, UpdateCheckSource, String)}. The linked file must be a plaintext file containing only for the latest version string.
      */
     CUSTOM_URL
