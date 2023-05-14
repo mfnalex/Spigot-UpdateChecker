@@ -62,14 +62,14 @@ The UpdateChecker is available in my public repository:
 <repositories>
     <repository>
         <id>jeff-media-public</id>
-        <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
+        <url>https://repo.jeff-media.com/public/</url>
     </repository>
 </repositories>
 <dependencies>
     <dependency>
         <groupId>com.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>3.0.2</version>
+        <version>3.0.3</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>

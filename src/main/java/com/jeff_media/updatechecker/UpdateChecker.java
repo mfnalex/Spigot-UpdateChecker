@@ -41,7 +41,7 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("UnusedReturnValue")
 public class UpdateChecker {
 
-    static final String VERSION = "3.0.0";
+    static final String VERSION = "3.0.1";
     private static final String SPIGOT_CHANGELOG_SUFFIX = "/history";
     private static final String SPIGOT_DOWNLOAD_LINK = "https://www.spigotmc.org/resources/";
     private static final String SPIGOT_UPDATE_API = "https://api.spigotmc.org/simple/0.2/index.php?action=getResource&id=%s";
