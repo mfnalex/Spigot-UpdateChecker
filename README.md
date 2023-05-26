@@ -52,7 +52,9 @@ just provide the SpigotMC Resource ID of your plugin for the Update Checker to g
 - Spiget API
 - Polymart API
 - GitHub Release Tags
+- Hangar
 - Your own custom URL pointing to a text file
+- Everything else, if you write your own tiny parser
 
 ## Maven
 
