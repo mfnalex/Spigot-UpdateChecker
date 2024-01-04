@@ -120,7 +120,7 @@ To get a working UpdateChecker, this is already enough:
 ```java
 public class MyPlugin extends JavaPlugin {
     // To get the Resource ID, look at the number at the end of the URL of your plugin's SpigotMC page
-    private static final int SPIGOT_RESOURCE_ID = 59773;
+    private static final String SPIGOT_RESOURCE_ID = "59773";
 
     @Override
     public void onEnable() {
@@ -140,7 +140,7 @@ Of course, there are many more options you can use. For example:
 import com.jeff_media.updatechecker.UpdateCheckSource;
 
 public class MyPlugin extends JavaPlugin {
-    private static final int SPIGOT_RESOURCE_ID = 59773;
+    private static final String SPIGOT_RESOURCE_ID = "59773";
 
     @Override
     public void onEnable() {
