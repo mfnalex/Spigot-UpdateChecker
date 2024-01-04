@@ -111,6 +111,30 @@ Please note that you will also have to shade and relocate the UpdateChecker into
 </build>
 ```
 
+## Gradle (Kotlin)
+```kotlin
+plugins {
+    id("com.github.johnrengelman.shadow") version "x.x.x"  // Used for shading
+}
+
+repositories {
+    maven(url = "https://repo.jeff-media.com/public/")
+}
+
+dependencies {
+    implementation("com.jeff_media:SpigotUpdateChecker:3.0.3")
+}
+
+tasks.named<ShadowJar>("shadowJar") {
+    dependencies {
+        relocate("com.jeff_media", "your.package.lib") {
+            include(dependency("com.jeff_media:"))
+        }
+    }
+}
+```
+
+
 **Failing to relocate the package will make the UpdateChecker throw an exception, so RELOCATE IT!**
 
 ## Example
