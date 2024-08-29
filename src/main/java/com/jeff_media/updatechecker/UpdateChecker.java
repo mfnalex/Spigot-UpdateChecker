@@ -33,6 +33,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 /**
@@ -81,7 +83,9 @@ public class UpdateChecker {
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
     private String paidDownloadLink = null;
-    private int taskId = -1;
+    //private int taskId = -1;
+    @Nullable
+    private ScheduledExecutorService task = null;
     private int timeout = 0;
     private String usedVersion;
     private String userAgentString = null;
@@ -277,12 +281,12 @@ public class UpdateChecker {
     public UpdateChecker checkEveryXHours(double hours) {
         double minutes = hours * 60;
         double seconds = minutes * 60;
-        long ticks = ((int) seconds) * 20L;
+        long milliseconds = ((int) seconds) * 1000L;
         stop();
-        if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
+        if (milliseconds > 0) {
+            task = ThreadScheduler.scheduleRepeatingTask(() -> checkNow(Bukkit.getConsoleSender()), milliseconds, milliseconds, TimeUnit.MILLISECONDS);
         } else {
-            taskId = -1;
+            task = null;
         }
         return this;
     }
@@ -293,10 +297,10 @@ public class UpdateChecker {
      * its previous task.
      */
     public UpdateChecker stop() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
+        if (task != null) {
+            ThreadScheduler.stopScheduler(task);
         }
-        taskId = -1;
+        task = null;
         return this;
     }
 
@@ -320,7 +324,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        ThreadScheduler.runTask(() -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -345,12 +349,12 @@ public class UpdateChecker {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
             } catch (final IOException exception) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                Bukkit.getScheduler().runTask(plugin, () -> getOnFail().accept(requesters, exception));
+                ThreadScheduler.runTask(() -> getOnFail().accept(requesters, exception));
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            ThreadScheduler.runTask(() -> {
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
                     getOnSuccess().accept(requesters, latestVersion);
