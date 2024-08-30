@@ -83,7 +83,6 @@ public class UpdateChecker {
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
     private String paidDownloadLink = null;
-    //private int taskId = -1;
     @Nullable
     private ScheduledExecutorService task = null;
     private int timeout = 0;
