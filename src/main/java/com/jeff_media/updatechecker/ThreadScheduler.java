@@ -20,9 +20,6 @@ public class ThreadScheduler {
     }
 
     public static ScheduledExecutorService scheduleRepeatingTask(Runnable task, long delay, long period, TimeUnit timeUnit) {
-        // Create a ScheduledExecutorService with a single thread
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
         scheduler.scheduleAtFixedRate(task, delay, period, timeUnit);
 
         return scheduler;
