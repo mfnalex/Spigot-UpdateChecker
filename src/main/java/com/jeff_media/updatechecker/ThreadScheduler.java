@@ -9,7 +9,8 @@ public class ThreadScheduler {
     public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static ScheduledExecutorService runTask(Runnable task) {
-        return runTask(task, 1/20L, TimeUnit.MILLISECONDS);
+        // Divide 1s -> 1000ms by the amount of ticks per seconds
+        return runTask(task, 1000/20L, TimeUnit.MILLISECONDS);
     }
 
     public static ScheduledExecutorService runTask(Runnable task, long delay, TimeUnit timeUnit) {
