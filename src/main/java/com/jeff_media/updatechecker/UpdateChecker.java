@@ -18,6 +18,10 @@
 
 package com.jeff_media.updatechecker;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.schedulers.TaskScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -81,7 +85,9 @@ public class UpdateChecker {
     private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
     private String paidDownloadLink = null;
-    private int taskId = -1;
+    private static TaskScheduler scheduler;
+    @Nullable
+    private MyScheduledTask updaterTask = null;
     private int timeout = 0;
     private String usedVersion;
     private String userAgentString = null;
@@ -107,7 +113,6 @@ public class UpdateChecker {
     }
 
     private void init() {
-
         Objects.requireNonNull(plugin, "Plugin cannot be null.");
 
         this.usedVersion = plugin.getDescription().getVersion().trim();
@@ -115,6 +120,8 @@ public class UpdateChecker {
         if (detectPaidVersion()) {
             usingPaidVersion = true;
         }
+
+        scheduler = UniversalScheduler.getScheduler(plugin);
 
         if (!listenerAlreadyRegistered) {
             Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
@@ -280,9 +287,9 @@ public class UpdateChecker {
         long ticks = ((int) seconds) * 20L;
         stop();
         if (ticks > 0) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
+            updaterTask = getScheduler().runTaskTimer(() -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
         } else {
-            taskId = -1;
+            updaterTask = null;
         }
         return this;
     }
@@ -293,10 +300,10 @@ public class UpdateChecker {
      * its previous task.
      */
     public UpdateChecker stop() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
+        if (updaterTask != null) {
+            updaterTask.cancel();
         }
-        taskId = -1;
+        updaterTask = null;
         return this;
     }
 
@@ -614,6 +621,15 @@ public class UpdateChecker {
      */
     protected Plugin getPlugin() {
         return plugin;
+    }
+
+    /**
+     *  Gets the TaskScheduler instance used by the UpdateChecker
+     *
+     * @return TaskScheduler instance used by the UpdateChecker
+     */
+    public static TaskScheduler getScheduler() {
+        return scheduler;
     }
 
     /**
