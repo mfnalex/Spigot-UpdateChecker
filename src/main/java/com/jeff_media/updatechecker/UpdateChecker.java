@@ -326,7 +326,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        getScheduler().runTaskAsynchronously(() -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -351,12 +351,12 @@ public class UpdateChecker {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
             } catch (final IOException exception) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                Bukkit.getScheduler().runTask(plugin, () -> getOnFail().accept(requesters, exception));
+                getScheduler().runTask(() -> getOnFail().accept(requesters, exception));
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            getScheduler().runTask(() -> {
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
                     getOnSuccess().accept(requesters, latestVersion);
