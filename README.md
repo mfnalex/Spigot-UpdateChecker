@@ -25,7 +25,7 @@ all the way to the bottom for maven information, JavaDocs and a complete Example
 
 Author: mfnalex
 
-Contributors: MrNemo64
+Contributors: MrNemo64, Paulem.
 
 [Related SpigotMC thread](https://www.spigotmc.org/threads/powerful-update-checker-with-only-one-line-of-code.500010/)
 
@@ -71,7 +71,7 @@ The UpdateChecker is available in my public repository:
     <dependency>
         <groupId>com.jeff_media</groupId>
         <artifactId>SpigotUpdateChecker</artifactId>
-        <version>3.0.3</version>
+        <version>3.0.4</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -122,7 +122,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.jeff_media:SpigotUpdateChecker:3.0.3")
+    implementation("com.jeff_media:SpigotUpdateChecker:3.0.4")
 }
 
 tasks.named<ShadowJar>("shadowJar") {
