@@ -25,7 +25,7 @@ all the way to the bottom for maven information, JavaDocs and a complete Example
 
 Author: mfnalex
 
-Contributors: MrNemo64, Paulem.
+Contributors: MrNemo64, GamerCoder215, PauLem
 
 [Related SpigotMC thread](https://www.spigotmc.org/threads/powerful-update-checker-with-only-one-line-of-code.500010/)
 
